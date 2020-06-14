@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/distributed_computing.iml" filepath="$PROJECT_DIR$/distributed_computing.iml" />
+      <module fileurl="file://$PROJECT_DIR$/distributed-file-sharing-app.iml" filepath="$PROJECT_DIR$/distributed-file-sharing-app.iml" />
     </modules>
   </component>
 </project>
