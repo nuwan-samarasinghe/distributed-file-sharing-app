@@ -1,0 +1,11 @@
+app:
+  bootstrap-server:
+    ip-address: "127.0.0.1"
+    port: 55555
+    timeout: 10000
+  commands:
+    register-format: "REG %s %s %s"
+    message-format: "%04d %s"
+spring:
+  main:
+    web-application-type: none

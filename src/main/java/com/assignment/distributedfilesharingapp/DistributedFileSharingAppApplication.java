@@ -1,5 +1,6 @@
 package com.assignment.distributedfilesharingapp;
 
+import com.assignment.distributedfilesharingapp.model.Node;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
