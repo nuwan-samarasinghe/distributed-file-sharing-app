@@ -1,6 +1,5 @@
 package com.assignment.distributedfilesharingapp.common;
 
-import com.assignment.distributedfilesharingapp.model.NeighbourNode;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 

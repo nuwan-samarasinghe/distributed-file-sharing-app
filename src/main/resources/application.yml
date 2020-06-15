@@ -8,6 +8,11 @@ app:
     register-format: "REG %s %s %s"
     un-register-format: "UNREG %s %s %s"
     message-format: "%04d %s"
+  node:
+    max-neighbours: 6
+    min-neighbours: 2
+  common:
+    r-ping-message-id: "rPingMessage"
 spring:
   main:
     web-application-type: none

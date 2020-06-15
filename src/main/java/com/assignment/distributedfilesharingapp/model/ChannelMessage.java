@@ -5,7 +5,8 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class NeighbourNode {
-    private String ipAddress;
-    private Integer port;
+public class ChannelMessage {
+    private final String address;
+    private final Integer port;
+    private final String message;
 }
