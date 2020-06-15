@@ -3,8 +3,10 @@ app:
     ip-address: "127.0.0.1"
     port: 55555
     timeout: 10000
+    node-name: "node-{uniqueID}"
   commands:
     register-format: "REG %s %s %s"
+    un-register-format: "UNREG %s %s %s"
     message-format: "%04d %s"
 spring:
   main:

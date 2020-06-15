@@ -2,6 +2,7 @@ package com.assignment.distributedfilesharingapp.model;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -16,7 +17,13 @@ public class Node {
     private String ipAddress;
     private Integer port;
 
+    @Value("${app.bootstrap-server.node-name}")
+    private String nodeName;
+
+    // generate a node with ip address, username & a port
     public Node() {
+        int doubleGeneratedValue = (int) (Math.random() * 10);
+        this.userName = nodeName.replace("{uniqueID}", "" + doubleGeneratedValue);
         // get host ip address
         try (final DatagramSocket socket = new DatagramSocket()) {
             socket.connect(InetAddress.getByName(IP_FORMAT), 10002);

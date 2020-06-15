@@ -17,5 +17,7 @@ public class AppConfig {
         this.bootstrapServerService = bootstrapServerService;
         Node node = new Node();
         bootstrapServerService.register("nsamarasinghe", node.getIpAddress(), node.getPort());
+        System.out.println("\n\n\n");
+        bootstrapServerService.unRegister("nsamarasinghe", node.getIpAddress(), node.getPort());
     }
 }

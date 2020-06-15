@@ -3,18 +3,13 @@ package com.assignment.distributedfilesharingapp.service;
 import com.assignment.distributedfilesharingapp.common.IpPortConverter;
 import com.assignment.distributedfilesharingapp.exception.FileSharingException;
 import com.assignment.distributedfilesharingapp.model.CommandTypes;
-import com.assignment.distributedfilesharingapp.model.NeighbourNode;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -25,6 +20,9 @@ public class BootstrapServerService {
 
     @Value("${app.commands.message-format}")
     private String messageFormat;
+
+    @Value("${app.commands.un-register-format}")
+    private String unRegisterFormat;
 
     @Value("${app.bootstrap-server.ip-address}")
     private String ipAddress;
@@ -44,14 +42,51 @@ public class BootstrapServerService {
         this.ipPortConverter = ipPortConverter;
     }
 
-    //register node
+    /**
+     * to register a node in Bootstrap server
+     *
+     * @param userName  username of the server
+     * @param ipAddress ip-address of the server
+     * @param port      application running port of the server
+     * @return after registration it will give the another two registered neighbour nodes.
+     */
     public List<InetSocketAddress> register(String userName, String ipAddress, int port) throws IOException {
         String request = String.format(registerFormat, ipAddress, port, userName);
         request = String.format(messageFormat, request.length() + 5, request);
-        return processBootstrapResponse(sendOrReceive(request));
+        return processBootstrapRegisterResponse(sendOrReceive(request));
     }
 
-    private List<InetSocketAddress> processBootstrapResponse(String sendOrReceive) {
+    /**
+     * un register a node in Bootstrap server
+     *
+     * @param userName  username of the server
+     * @param ipAddress ip-address of the server
+     * @param port      application running port of the server
+     * @return after registration it will give a boolean value whether it removed or not.
+     */
+    public boolean unRegister(String userName, String ipAddress, int port) throws IOException {
+        String request = String.format(unRegisterFormat, ipAddress, port, userName);
+        request = String.format(messageFormat, request.length() + 5, request);
+        return processBootstrapServerUnregisterResponse(sendOrReceive(request));
+    }
+
+    private boolean processBootstrapServerUnregisterResponse(String response) {
+        String[] strings = response.split(" ");
+        if (!response.contains(CommandTypes.REGOK.name())) {
+            throw new FileSharingException(CommandTypes.UNROK + " not received");
+        }
+        if (Objects.equals(strings[2], "0")) {
+            log.info("Successfully unregistered");
+            return true;
+        } else if (Objects.equals(strings[2], "9999")) {
+            log.info("Error while un-registering. IP and port may not be in the registry or command is incorrect");
+            return false;
+        } else {
+            return false;
+        }
+    }
+
+    private List<InetSocketAddress> processBootstrapRegisterResponse(String sendOrReceive) {
 
         if (!sendOrReceive.contains(CommandTypes.REGOK.name())) {
             log.error(" {} not received", CommandTypes.REGOK.name());
