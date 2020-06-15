@@ -1,9 +1,12 @@
 package com.assignment.distributedfilesharingapp.config;
 
 import com.assignment.distributedfilesharingapp.common.FileManager;
+import com.assignment.distributedfilesharingapp.common.MessageBrokerThread;
+import com.assignment.distributedfilesharingapp.common.handlers.*;
 import com.assignment.distributedfilesharingapp.model.Node;
 import com.assignment.distributedfilesharingapp.service.BootstrapServerService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,17 +19,42 @@ import java.util.List;
 @Configuration
 public class AppConfig {
 
+    @Value("${app.common.r-ping-message-id}")
+    private String rPingMessageId;
+
+    @Value("${app.bootstrap-server.ping-interval}")
+    private Integer pingInterval;
+
+    @Value("${app.bootstrap-server.node-name}")
+    private String nodeName;
+
     private final BootstrapServerService bootstrapServerService;
 
     private String username;
 
-    public AppConfig(BootstrapServerService bootstrapServerService) {
+    private final PingRequestHandler pingRequestHandler;
+
+    private final LeaveRequestHandler leaveRequestHandler;
+
+    private final ResponseHandlerFactory responseHandlerFactory;
+
+    public AppConfig(
+            BootstrapServerService bootstrapServerService,
+            PingRequestHandler pingRequestHandler,
+            LeaveRequestHandler leaveRequestHandler,
+            PongRequestHandler pongRequestHandler,
+            SearchRequestHandler searchRequestHandler,
+            QueryRequestHandler queryRequestHandler) {
         this.bootstrapServerService = bootstrapServerService;
         init();
+        this.pingRequestHandler = pingRequestHandler;
+        this.leaveRequestHandler = leaveRequestHandler;
+        searchRequestHandler.setFileManager(getFileManager());
+        responseHandlerFactory = new ResponseHandlerFactory(pingRequestHandler, pongRequestHandler, searchRequestHandler, queryRequestHandler);
     }
 
     private void init() {
-        Node node = new Node();
+        Node node = new Node(nodeName);
         List<InetSocketAddress> neighbourNodes = new ArrayList<>();
         log.info("node created {}", node);
         try {
@@ -35,6 +63,17 @@ public class AppConfig {
         } catch (IOException e) {
             log.error("An error occurred while registering the node in bootstrap server", e);
         }
+
+        MessageBrokerThread messageBrokerThread = new MessageBrokerThread(
+                node.getIpAddress(),
+                node.getPort(),
+                pingRequestHandler,
+                leaveRequestHandler,
+                getFileManager(),
+                rPingMessageId,
+                pingInterval,
+                responseHandlerFactory);
+        new Thread(messageBrokerThread).start();
 
         // send pings to the nodes
         neighbourNodes.forEach(neighbourNode -> {

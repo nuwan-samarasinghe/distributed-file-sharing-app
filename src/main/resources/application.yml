@@ -3,6 +3,9 @@ app:
     ip-address: "127.0.0.1"
     port: 55555
     timeout: 10000
+    ping-interval: 8000
+    ping-timeout: 3000
+    ping-retry: 3
     node-name: "node-{uniqueID}"
   commands:
     register-format: "REG %s %s %s"
@@ -15,6 +18,7 @@ app:
     ping-message-id-format: "PINGID:%s:%s"
     query-format: "SER %s %s %s %s"
     query-hit-format: "SEROK %s %s %s %s %s"
+    ping-format: "PING %s %s"
   node:
     max-neighbours: 6
     min-neighbours: 2

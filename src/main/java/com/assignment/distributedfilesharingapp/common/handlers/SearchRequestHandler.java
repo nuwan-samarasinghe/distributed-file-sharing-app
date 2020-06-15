@@ -22,7 +22,7 @@ public class SearchRequestHandler implements AbstractResponseHandler, AbstractRe
     private BlockingQueue<ChannelMessage> channelOut;
     private TimeOutManager timeoutManager;
 
-    private final FileManager fileManager;
+    private FileManager fileManager;
 
     @Value("${app.commands.query-format}")
     private String queryFormat;
@@ -37,7 +37,7 @@ public class SearchRequestHandler implements AbstractResponseHandler, AbstractRe
     private String queryHitFormat;
 
 
-    public SearchRequestHandler(FileManager fileManager) {
+    public void setFileManager(FileManager fileManager) {
         this.fileManager = fileManager;
     }
 

@@ -17,11 +17,8 @@ public class Node {
     private String ipAddress;
     private Integer port;
 
-    @Value("${app.bootstrap-server.node-name}")
-    private String nodeName;
-
     // generate a node with ip address, username & a port
-    public Node() {
+    public Node(String nodeName) {
         int doubleGeneratedValue = (int) (Math.random() * 10);
         this.userName = nodeName.replace("{uniqueID}", "" + doubleGeneratedValue);
         // get host ip address

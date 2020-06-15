@@ -1,5 +1,7 @@
 package com.assignment.distributedfilesharingapp.common.handlers;
 
+import com.assignment.distributedfilesharingapp.common.PingTimeoutCallback;
+import com.assignment.distributedfilesharingapp.common.TimeOutCallback;
 import com.assignment.distributedfilesharingapp.common.TimeOutManager;
 import com.assignment.distributedfilesharingapp.model.ChannelMessage;
 import com.assignment.distributedfilesharingapp.model.CommandTypes;
@@ -9,8 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
 @Slf4j
@@ -20,6 +23,7 @@ public class PingRequestHandler implements AbstractRequestHandler, AbstractRespo
     private BlockingQueue<ChannelMessage> channelOut;
     private RoutingTable routingTable;
     private TimeOutManager timeoutManager;
+    private final Map<String, Integer> pingFailureCount = new HashMap<>();
 
     @Value("${app.commands.bping-format}")
     private String bPingFormat;
@@ -39,8 +43,20 @@ public class PingRequestHandler implements AbstractRequestHandler, AbstractRespo
     @Value("${app.node.bping-hop-limit}")
     private Integer bpingHopLimit;
 
-    @Value("${app.node.bpong-format}")
+    @Value("${app.commands.bpong-format}")
     private String bPongFormat;
+
+    @Value("${app.commands.ping-format}")
+    private String pingFormat;
+
+    @Value("${app.commands.ping-message-id-format}")
+    private String pingMessageIdFormat;
+
+    @Value("${app.bootstrap-server.ping-timeout}")
+    private Integer pingTimeOut;
+
+    @Value("${app.bootstrap-server.ping-retry}")
+    private Integer pingRetry;
 
     @Override
     public void sendRequest(ChannelMessage message) {
@@ -96,7 +112,21 @@ public class PingRequestHandler implements AbstractRequestHandler, AbstractRespo
 
     }
 
-    private void sendBootstrapPing(String address, int port) {
+    public void sendPing(String address, int port) {
+        log.info("send a ping to address: {} port:{}", address, port);
+        String payload = String.format(pingFormat, this.routingTable.getAddress(), this.routingTable.getPort());
+        String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
+        ChannelMessage message = new ChannelMessage(address, port, rawMessage);
+        this.pingFailureCount.putIfAbsent(String.format(pingMessageIdFormat, address, port), 0);
+        this.timeoutManager.registerMessage(
+                String.format(pingMessageIdFormat, address, port),
+                pingTimeOut,
+                new PingTimeoutCallback(pingFailureCount, this.routingTable, pingRetry, minNeighbours, this));
+        this.sendRequest(message);
+    }
+
+
+    public void sendBootstrapPing(String address, int port) {
         List<Neighbour> otherNeighbours = routingTable.getOtherNeighbours(address, port);
         String payload = String.format(bPingFormat, this.routingTable.getAddress(), this.routingTable.getPort(), bpingHopLimit);
         String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
