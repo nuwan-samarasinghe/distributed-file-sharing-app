@@ -23,8 +23,4 @@ public class Neighbour {
     public void Ping() {
         this.pingPongs++;
     }
-
-    public String toString() {
-        return address + ":" + port;
-    }
 }

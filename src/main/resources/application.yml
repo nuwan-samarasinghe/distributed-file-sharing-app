@@ -8,11 +8,21 @@ app:
     register-format: "REG %s %s %s"
     un-register-format: "UNREG %s %s %s"
     message-format: "%04d %s"
+    leave-format: "LEAVE %s %s"
+    bping-format: "BPING %s %s %s"
+    bpong-format: "BPONG %s %s"
+    pong-format: "PONG %s %s"
+    ping-message-id-format: "PINGID:%s:%s"
+    query-format: "SER %s %s %s %s"
+    query-hit-format: "SEROK %s %s %s %s %s"
   node:
     max-neighbours: 6
     min-neighbours: 2
+    bping-hop-limit: 3
+    hop-count: 5
   common:
     r-ping-message-id: "rPingMessage"
+    file-name: "FileNames.txt"
 spring:
   main:
     web-application-type: none

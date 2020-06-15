@@ -90,9 +90,9 @@ public class RoutingTable {
                 .orElse(false);
     }
 
-    public List<String> getOtherNeighbours(String address, int port) {
+    public List<Neighbour> getOtherNeighbours(String address, int port) {
         return neighbours.stream()
                 .filter(neighbour -> !(neighbour.getAddress().equals(address) && neighbour.getPort().equals(port)))
-                .map(Neighbour::toString).collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 }
