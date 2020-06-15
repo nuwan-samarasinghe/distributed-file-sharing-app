@@ -15,10 +15,10 @@ public class FileManager {
     private final String rootFolder;
     private final String fileSeparator = "/";
 
-    @Value("${app.common.file-name}")
     private String fileName;
 
-    public FileManager(String userName) {
+    public FileManager(String userName, String fileName) {
+        this.fileName = fileName;
         this.rootFolder = "." + fileSeparator + userName;
         ArrayList<String> fullList = readFileNamesFromResources();
         Random random = new Random();

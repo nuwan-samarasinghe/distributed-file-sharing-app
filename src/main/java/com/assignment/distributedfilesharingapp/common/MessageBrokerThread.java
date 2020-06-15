@@ -9,6 +9,7 @@ import com.assignment.distributedfilesharingapp.model.Neighbour;
 import com.assignment.distributedfilesharingapp.model.RoutingTable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.env.Environment;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -28,7 +29,7 @@ public class MessageBrokerThread implements Runnable {
     @Getter
     private final LinkedBlockingQueue<ChannelMessage> channelOut;
     @Getter
-    private final TimeOutManager timeoutManager = new TimeOutManager();
+    private final TimeOutManager timeoutManager;
     private final FileManager fileManager;
     private final ResponseHandlerFactory responseHandlerFactory;
 
@@ -40,16 +41,18 @@ public class MessageBrokerThread implements Runnable {
             FileManager fileManager,
             String rPingMessageId,
             Integer pingInterval,
-            ResponseHandlerFactory responseHandlerFactory) {
+            ResponseHandlerFactory responseHandlerFactory,
+            Environment environment) {
 
         this.address = address;
         this.port = port;
         this.routingTable = new RoutingTable(address, port);
-        this.channelIn = new LinkedBlockingQueue<ChannelMessage>();
+        this.channelIn = new LinkedBlockingQueue<>();
         this.channelOut = new LinkedBlockingQueue<>();
         this.pingRequestHandler = pingRequestHandler;
         this.leaveRequestHandler = leaveRequestHandler;
         this.fileManager = fileManager;
+        timeoutManager = new TimeOutManager(environment);
         this.pingRequestHandler.init(routingTable, channelOut, timeoutManager);
         this.leaveRequestHandler.init(routingTable, channelOut, timeoutManager);
         this.responseHandlerFactory = responseHandlerFactory;

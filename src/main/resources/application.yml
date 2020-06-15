@@ -27,6 +27,3 @@ app:
   common:
     r-ping-message-id: "rPingMessage"
     file-name: "FileNames.txt"
-spring:
-  main:
-    web-application-type: none

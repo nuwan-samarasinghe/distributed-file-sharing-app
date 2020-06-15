@@ -2,12 +2,12 @@ package com.assignment.distributedfilesharingapp.model;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.util.UUID;
 
 @Slf4j
 @Data
@@ -19,8 +19,8 @@ public class Node {
 
     // generate a node with ip address, username & a port
     public Node(String nodeName) {
-        int doubleGeneratedValue = (int) (Math.random() * 10);
-        this.userName = nodeName.replace("{uniqueID}", "" + doubleGeneratedValue);
+        String uniqueID = UUID.randomUUID().toString();
+        this.userName = nodeName.replace("{uniqueID}", "" + uniqueID);
         // get host ip address
         try (final DatagramSocket socket = new DatagramSocket()) {
             socket.connect(InetAddress.getByName(IP_FORMAT), 10002);
