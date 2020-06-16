@@ -32,7 +32,7 @@ public class UDPServer extends Thread {
                 int port = Integer.parseInt(((packet.getSocketAddress().toString()).substring(1)).split(":")[1]);
                 String body = new String(response, 0, response.length);
                 ChannelMessage message = new ChannelMessage(address, port, body);
-                log.info("udp client sending the message {} address:{} port:{}", message.getMessage(), message.getAddress(), message.getPort());
+                // log.info("udp client sending the message {} address:{} port:{}", message.getMessage(), message.getAddress(), message.getPort());
                 channelIn.put(message);
             } catch (IOException | InterruptedException e) {
                 log.error("an error occurred while sending the message", e);

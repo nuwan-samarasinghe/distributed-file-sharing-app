@@ -1,9 +1,6 @@
 package com.assignment.distributedfilesharingapp.common;
 
-import com.assignment.distributedfilesharingapp.common.handlers.AbstractResponseHandler;
-import com.assignment.distributedfilesharingapp.common.handlers.LeaveRequestHandler;
-import com.assignment.distributedfilesharingapp.common.handlers.PingRequestHandler;
-import com.assignment.distributedfilesharingapp.common.handlers.ResponseHandlerFactory;
+import com.assignment.distributedfilesharingapp.common.handlers.*;
 import com.assignment.distributedfilesharingapp.model.ChannelMessage;
 import com.assignment.distributedfilesharingapp.model.Neighbour;
 import com.assignment.distributedfilesharingapp.model.RoutingTable;
@@ -26,6 +23,7 @@ public class MessageBrokerThread implements Runnable {
     @Getter
     private final RoutingTable routingTable;
     private final PingRequestHandler pingRequestHandler;
+    @Getter
     private final LeaveRequestHandler leaveRequestHandler;
     private final BlockingQueue<ChannelMessage> channelIn;
     @Getter
@@ -36,6 +34,8 @@ public class MessageBrokerThread implements Runnable {
     private final ResponseHandlerFactory responseHandlerFactory;
     private final UDPServer server;
     private final UDPClient client;
+    private final QueryRequestHandler queryRequestHandler;
+    private final SearchRequestHandler searchRequestHandler;
 
     public MessageBrokerThread(
             String address,
@@ -46,6 +46,8 @@ public class MessageBrokerThread implements Runnable {
             String rPingMessageId,
             Integer pingInterval,
             ResponseHandlerFactory responseHandlerFactory,
+            QueryRequestHandler queryRequestHandler,
+            SearchRequestHandler searchRequestHandler,
             Environment environment) throws SocketException {
 
         this.address = address;
@@ -57,8 +59,12 @@ public class MessageBrokerThread implements Runnable {
         this.leaveRequestHandler = leaveRequestHandler;
         this.fileManager = fileManager;
         timeoutManager = new TimeOutManager(environment);
+        this.queryRequestHandler = queryRequestHandler;
+        this.searchRequestHandler = searchRequestHandler;
         this.pingRequestHandler.init(routingTable, channelOut, timeoutManager);
         this.leaveRequestHandler.init(routingTable, channelOut, timeoutManager);
+        this.queryRequestHandler.init(routingTable, channelOut, timeoutManager);
+        this.searchRequestHandler.init(routingTable, channelOut, timeoutManager);
         this.responseHandlerFactory = responseHandlerFactory;
 
         DatagramSocket socket = new DatagramSocket(this.port);
@@ -113,5 +119,9 @@ public class MessageBrokerThread implements Runnable {
                 log.error("an error occurred while processing the message", e);
             }
         } while (true);
+    }
+
+    public void doSearch(String fileName) {
+        this.searchRequestHandler.doSearch(fileName);
     }
 }

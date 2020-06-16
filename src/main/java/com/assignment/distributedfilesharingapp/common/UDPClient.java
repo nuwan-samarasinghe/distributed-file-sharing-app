@@ -28,7 +28,7 @@ public class UDPClient extends Thread {
                 String address = message.getAddress();
                 int port = message.getPort();
                 String payload = message.getMessage();
-                log.info("udp client sending the message {} address:{} port:{}", message.getMessage(), message.getAddress(), message.getPort());
+                // log.info("udp client sending the message {} address:{} port:{}", message.getMessage(), message.getAddress(), message.getPort());
                 DatagramPacket packet = new DatagramPacket(payload.getBytes(), payload.length(), InetAddress.getByName(address), port);
                 socket.send(packet);
             } catch (IOException | InterruptedException e) {

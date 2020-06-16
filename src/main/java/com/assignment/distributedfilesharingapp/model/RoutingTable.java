@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,7 +12,7 @@ import java.util.stream.Collectors;
 public class RoutingTable {
 
     @Getter
-    private final List<Neighbour> neighbours = new ArrayList<>();
+    private final List<Neighbour> neighbours = Collections.synchronizedList(new ArrayList<>());
     @Getter
     private final String address;
     @Getter
@@ -24,14 +25,12 @@ public class RoutingTable {
 
     public synchronized Integer addNeighbour(String address, Integer port, Integer clientPort, Integer maxNeighbours) {
         if (!neighbours.isEmpty()) {
-            return (int) neighbours.stream().map(neighbour -> {
+            for (Neighbour neighbour : neighbours) {
                 if (neighbour.getAddress().equals(address) && neighbour.getPort().equals(port)) {
                     neighbour.Ping();
                     return neighbours.size();
-                } else {
-                    return 0;
                 }
-            }).count();
+            }
         }
         if (neighbours.size() >= maxNeighbours) {
             log.info("Cannot add neighbour : " + address + ":" + port);

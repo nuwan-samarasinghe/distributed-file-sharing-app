@@ -7,6 +7,7 @@ import com.assignment.distributedfilesharingapp.model.RoutingTable;
 import com.assignment.distributedfilesharingapp.model.SearchResult;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -15,6 +16,15 @@ import java.util.concurrent.BlockingQueue;
 @Slf4j
 @Component
 public class QueryRequestHandler implements AbstractResponseHandler {
+
+    @Value("${app.commands.query-format}")
+    private String queryFormat;
+
+    @Value("${app.node.hop-count}")
+    private Integer hopCount;
+
+    @Value("${app.commands.message-format}")
+    private String messageFormat;
 
     private RoutingTable routingTable;
     private BlockingQueue<ChannelMessage> channelOut;
@@ -53,5 +63,12 @@ public class QueryRequestHandler implements AbstractResponseHandler {
         this.routingTable = routingTable;
         this.channelOut = channelMessageBlockingQueue;
         this.timeoutManager = timeoutManager;
+    }
+
+    public void doSearch(String fileName) {
+        String payload = String.format(queryFormat, this.routingTable.getAddress(), this.routingTable.getPort(), StringEncoderDecoder.encode(fileName), hopCount);
+        String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
+        ChannelMessage initialMessage = new ChannelMessage(this.routingTable.getAddress(), this.routingTable.getPort(), rawMessage);
+        this.handleResponse(initialMessage);
     }
 }

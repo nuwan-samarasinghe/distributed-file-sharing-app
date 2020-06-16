@@ -4,18 +4,18 @@ import com.assignment.distributedfilesharingapp.common.FileManager;
 import com.assignment.distributedfilesharingapp.common.MessageBrokerThread;
 import com.assignment.distributedfilesharingapp.common.handlers.*;
 import com.assignment.distributedfilesharingapp.model.Node;
+import com.assignment.distributedfilesharingapp.model.SearchResult;
 import com.assignment.distributedfilesharingapp.service.BootstrapServerService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @Configuration
@@ -35,8 +35,11 @@ public class AppConfig {
 
     private final SearchRequestHandler searchRequestHandler;
 
+    private final QueryRequestHandler queryRequestHandler;
+
     private final Environment environment;
 
+    @Getter
     private FileManager fileManager;
 
     @Getter
@@ -57,6 +60,7 @@ public class AppConfig {
         this.pingRequestHandler = pingRequestHandler;
         this.leaveRequestHandler = leaveRequestHandler;
         this.searchRequestHandler = searchRequestHandler;
+        this.queryRequestHandler = queryRequestHandler;
         responseHandlerFactory = new ResponseHandlerFactory(pingRequestHandler, pongRequestHandler, searchRequestHandler, queryRequestHandler);
         this.environment = environment;
         this.nodeName = environment.getProperty("app.bootstrap-server.node-name");
@@ -86,6 +90,8 @@ public class AppConfig {
                 this.environment.getProperty("app.common.r-ping-message-id"),
                 Integer.parseInt(Objects.requireNonNull(this.environment.getProperty("app.bootstrap-server.ping-interval"))),
                 responseHandlerFactory,
+                this.queryRequestHandler,
+                this.searchRequestHandler,
                 this.environment);
         new Thread(messageBrokerThread).start();
 
@@ -93,5 +99,26 @@ public class AppConfig {
         neighbourNodes
                 .forEach(neighbourNode -> this.messageBrokerThread.sendPing(neighbourNode.getAddress().getHostAddress(), neighbourNode.getPort()));
 
+    }
+
+    public void unregisterNode() {
+        try {
+            this.bootstrapServerService.unRegister(this.node.getUserName(), this.node.getIpAddress(), this.node.getPort());
+            this.messageBrokerThread.getLeaveRequestHandler().sendLeave();
+        } catch (IOException e) {
+            log.info("Un-Registering node failed", e);
+        }
+    }
+
+    public void stopApplication() {
+        System.exit(0);
+    }
+
+    public Map<String, SearchResult> doSearch(String fileName) {
+        Map<String, SearchResult> searchResults = new HashMap<>();
+        this.queryRequestHandler.setSearchResults(searchResults);
+        this.queryRequestHandler.setSearchInitiatedTime(System.currentTimeMillis());
+        this.messageBrokerThread.doSearch(fileName);
+        return searchResults;
     }
 }

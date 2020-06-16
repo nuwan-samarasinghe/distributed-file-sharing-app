@@ -61,7 +61,7 @@ public class PingRequestHandler implements AbstractRequestHandler, AbstractRespo
     @Override
     public void sendRequest(ChannelMessage message) {
         try {
-            log.info("adding message to blocking queue with address {} port {} and the message {}", message.getAddress(), message.getPort(), message.getMessage());
+            // log.info("adding message to blocking queue with address {} port {} and the message {}", message.getAddress(), message.getPort(), message.getMessage());
             channelOut.put(message);
         } catch (InterruptedException e) {
             log.error("an error occurred while adding the message.", e);
@@ -113,7 +113,7 @@ public class PingRequestHandler implements AbstractRequestHandler, AbstractRespo
     }
 
     public void sendPing(String address, int port) {
-        log.info("send a ping to address: {} port:{}", address, port);
+        // log.info("send a ping to address: {} port:{}", address, port);
         String payload = String.format(pingFormat, this.routingTable.getAddress(), this.routingTable.getPort());
         String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
         ChannelMessage message = new ChannelMessage(address, port, rawMessage);

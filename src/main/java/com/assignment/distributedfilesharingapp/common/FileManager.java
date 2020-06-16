@@ -75,6 +75,10 @@ public class FileManager {
                 .collect(Collectors.joining("", "Total files: " + files.size() + "\n" + "++++++++++++++++++++++++++\n", ""));
     }
 
+    public List<String> getFileNamesList() {
+        return new ArrayList<>(files.keySet());
+    }
+
     public void createFile(String fileName) {
         try {
             String absoluteFilePath = this.rootFolder + fileSeparator + fileName;

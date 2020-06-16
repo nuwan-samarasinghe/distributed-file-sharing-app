@@ -52,7 +52,7 @@ public class SearchRequestHandler implements AbstractResponseHandler, AbstractRe
     @Override
     public void sendRequest(ChannelMessage message) {
         try {
-            log.info("adding message to blocking queue with address {} port {} and the message {}", message.getAddress(), message.getPort(), message.getMessage());
+            // log.info("adding message to blocking queue with address {} port {} and the message {}", message.getAddress(), message.getPort(), message.getMessage());
             channelOut.put(message);
         } catch (InterruptedException e) {
             log.error("an error occurred while adding the message.", e);
