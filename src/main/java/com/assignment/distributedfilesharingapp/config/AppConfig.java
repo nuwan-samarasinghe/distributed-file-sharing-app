@@ -12,6 +12,7 @@ import org.springframework.core.env.Environment;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -51,7 +52,7 @@ public class AppConfig {
             PongRequestHandler pongRequestHandler,
             SearchRequestHandler searchRequestHandler,
             QueryRequestHandler queryRequestHandler,
-            Environment environment) {
+            Environment environment) throws SocketException {
         this.bootstrapServerService = bootstrapServerService;
         this.pingRequestHandler = pingRequestHandler;
         this.leaveRequestHandler = leaveRequestHandler;
@@ -62,7 +63,7 @@ public class AppConfig {
         init();
     }
 
-    private void init() {
+    private void init() throws SocketException {
         this.node = new Node(nodeName);
         List<InetSocketAddress> neighbourNodes = new ArrayList<>();
         log.info("node created {}", node);
@@ -89,9 +90,8 @@ public class AppConfig {
         new Thread(messageBrokerThread).start();
 
         // send pings to the nodes
-        neighbourNodes.forEach(neighbourNode -> {
-
-        });
+        neighbourNodes
+                .forEach(neighbourNode -> this.messageBrokerThread.sendPing(neighbourNode.getAddress().getHostAddress(), neighbourNode.getPort()));
 
     }
 }

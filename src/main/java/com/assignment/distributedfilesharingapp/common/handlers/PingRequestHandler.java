@@ -69,7 +69,7 @@ public class PingRequestHandler implements AbstractRequestHandler, AbstractRespo
     }
 
     @Override
-    public void handleResponse(ChannelMessage message) {
+    public synchronized void handleResponse(ChannelMessage message) {
         log.info("ping received from {} port {} and the message is {}", message.getAddress(), message.getPort(), message.getMessage());
         String[] messageSplitArray = message.getMessage().split(" ");
         // if command type id BPING
@@ -102,10 +102,10 @@ public class PingRequestHandler implements AbstractRequestHandler, AbstractRespo
                 sendBootstrapPing(messageSplitArray[2], Integer.parseInt(messageSplitArray[3]));
             }
         } else {
-            if (this.routingTable.addNeighbour(messageSplitArray[2], Integer.parseInt(messageSplitArray[3]), message.getPort()) != 0) {
+            if (this.routingTable.addNeighbour(messageSplitArray[2], Integer.parseInt(messageSplitArray[3].trim()), message.getPort(), maxNeighbours) != 0) {
                 String payload = String.format(pongFormat, this.routingTable.getAddress(), this.routingTable.getPort());
                 String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
-                ChannelMessage outGoingMsg = new ChannelMessage(messageSplitArray[2], Integer.parseInt(messageSplitArray[3]), rawMessage);
+                ChannelMessage outGoingMsg = new ChannelMessage(messageSplitArray[2], Integer.parseInt(messageSplitArray[3].trim()), rawMessage);
                 this.sendRequest(outGoingMsg);
             }
         }

@@ -35,11 +35,11 @@ public class PongRequestHandler implements AbstractRequestHandler, AbstractRespo
         String[] messageSplit = message.getMessage().split(" ");
         if (messageSplit[1].equals(CommandTypes.BPONG.name())) {
             if (routingTable.getNeighboursCount() < maxNeighbours) {
-                this.routingTable.addNeighbour(messageSplit[2], Integer.parseInt(messageSplit[3]), message.getPort());
+                this.routingTable.addNeighbour(messageSplit[2], Integer.parseInt(messageSplit[3]), message.getPort(), maxNeighbours);
             }
         } else {
-            this.timeoutManager.removeMessage(String.format(pingMessageIdFormat, messageSplit[2], Integer.parseInt(messageSplit[3])));
-            this.routingTable.addNeighbour(messageSplit[2], Integer.parseInt(messageSplit[3]), message.getPort());
+            this.timeoutManager.removeMessage(String.format(pingMessageIdFormat, messageSplit[2], Integer.parseInt(messageSplit[3].trim())));
+            this.routingTable.addNeighbour(messageSplit[2], Integer.parseInt(messageSplit[3].trim()), message.getPort(), maxNeighbours);
         }
     }
 

@@ -6,13 +6,14 @@ import org.springframework.core.env.Environment;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class TimeOutManager {
 
     private final Environment environment;
 
-    private final Map<String, TimeoutCallbackMap> requests = new HashMap<>();
+    private final Map<String, TimeoutCallbackMap> requests = new ConcurrentHashMap<>();
 
     public TimeOutManager(Environment environment) {
         this.environment = environment;

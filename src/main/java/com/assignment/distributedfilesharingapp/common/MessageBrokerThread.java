@@ -11,6 +11,8 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 
+import java.net.DatagramSocket;
+import java.net.SocketException;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -32,6 +34,8 @@ public class MessageBrokerThread implements Runnable {
     private final TimeOutManager timeoutManager;
     private final FileManager fileManager;
     private final ResponseHandlerFactory responseHandlerFactory;
+    private final UDPServer server;
+    private final UDPClient client;
 
     public MessageBrokerThread(
             String address,
@@ -42,7 +46,7 @@ public class MessageBrokerThread implements Runnable {
             String rPingMessageId,
             Integer pingInterval,
             ResponseHandlerFactory responseHandlerFactory,
-            Environment environment) {
+            Environment environment) throws SocketException {
 
         this.address = address;
         this.port = port;
@@ -56,6 +60,11 @@ public class MessageBrokerThread implements Runnable {
         this.pingRequestHandler.init(routingTable, channelOut, timeoutManager);
         this.leaveRequestHandler.init(routingTable, channelOut, timeoutManager);
         this.responseHandlerFactory = responseHandlerFactory;
+
+        DatagramSocket socket = new DatagramSocket(this.port);
+        this.server = new UDPServer(channelIn, socket);
+
+        this.client = new UDPClient(channelOut, new DatagramSocket());
 
         log.info("starting the server");
         timeoutManager.registerMessage(rPingMessageId, pingInterval, new TimeOutCallback() {
@@ -79,7 +88,13 @@ public class MessageBrokerThread implements Runnable {
 
     @Override
     public void run() {
+        this.server.start();
+        this.client.start();
         this.process();
+    }
+
+    public void sendPing(String address, int port) {
+        this.pingRequestHandler.sendPing(address, port);
     }
 
     private void process() {
@@ -87,6 +102,7 @@ public class MessageBrokerThread implements Runnable {
             try {
                 ChannelMessage message = channelIn.poll(100, TimeUnit.MILLISECONDS);
                 if (message != null) {
+                    log.info("found the message {}", message.getMessage());
                     AbstractResponseHandler abstractResponseHandler = responseHandlerFactory.getResponseHandler(message.getMessage().split(" ")[1], this);
                     if (abstractResponseHandler != null) {
                         abstractResponseHandler.handleResponse(message);
@@ -94,7 +110,7 @@ public class MessageBrokerThread implements Runnable {
                 }
                 timeoutManager.checkForTimeout();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("an error occurred while processing the message", e);
             }
         } while (true);
     }

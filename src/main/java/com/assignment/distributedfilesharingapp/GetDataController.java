@@ -1,6 +1,7 @@
 package com.assignment.distributedfilesharingapp;
 
 import com.assignment.distributedfilesharingapp.config.AppConfig;
+import com.assignment.distributedfilesharingapp.model.RoutingTableDocument;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,8 +15,8 @@ public class GetDataController {
     }
 
     @GetMapping(value = "/ip-table")
-    private void printIpTable() {
-        appConfig.getMessageBrokerThread().getRoutingTable().printRoutingTable();
+    private RoutingTableDocument printIpTable() {
+        return appConfig.getMessageBrokerThread().getRoutingTable().getRoutingTableDocument();
     }
 
 }

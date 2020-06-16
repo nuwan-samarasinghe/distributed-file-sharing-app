@@ -2,7 +2,6 @@ package com.assignment.distributedfilesharingapp.model;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,14 +10,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RoutingTable {
 
-    @Value("${app.node.max-neighbours}")
-    private Integer maxNeighbours;
-
-    @Value("${app.node.min-neighbours}")
-    private Integer minNeighbours;
-
     @Getter
-    private List<Neighbour> neighbours = new ArrayList<>();
+    private final List<Neighbour> neighbours = new ArrayList<>();
     @Getter
     private final String address;
     @Getter
@@ -29,7 +22,7 @@ public class RoutingTable {
         this.port = port;
     }
 
-    public synchronized Integer addNeighbour(String address, Integer port, Integer clientPort) {
+    public synchronized Integer addNeighbour(String address, Integer port, Integer clientPort, Integer maxNeighbours) {
         if (!neighbours.isEmpty()) {
             return (int) neighbours.stream().map(neighbour -> {
                 if (neighbour.getAddress().equals(address) && neighbour.getPort().equals(port)) {
@@ -64,6 +57,14 @@ public class RoutingTable {
 
     public synchronized Integer getNeighboursCount() {
         return neighbours.size();
+    }
+
+    public synchronized RoutingTableDocument getRoutingTableDocument() {
+        RoutingTableDocument routingTableDocument = new RoutingTableDocument();
+        routingTableDocument.setAddress(address);
+        routingTableDocument.setPort(port);
+        routingTableDocument.setNeighbours(neighbours);
+        return routingTableDocument;
     }
 
     public synchronized void printRoutingTable() {
