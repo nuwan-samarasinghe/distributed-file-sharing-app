@@ -98,7 +98,6 @@ public class MessageBrokerThread implements Runnable {
 
     private void sendRoutinePing() {
         List<Neighbour> neighbours = routingTable.getNeighbours();
-        log.info("send routing ping {}", neighbours);
         neighbours.forEach(neighbour -> this.pingRequestHandler.sendPing(neighbour.getAddress(), neighbour.getPort()));
     }
 

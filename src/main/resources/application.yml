@@ -6,7 +6,6 @@ app:
     ping-interval: 8000
     ping-timeout: 3000
     ping-retry: 3
-    node-name: "node-{uniqueID}"
   commands:
     register-format: "REG %s %s %s"
     un-register-format: "UNREG %s %s %s"
@@ -20,6 +19,7 @@ app:
     query-hit-format: "SEROK %s %s %s %s %s"
     ping-format: "PING %s %s"
   node:
+    node-name: "node-{uniqueID}"
     max-neighbours: 6
     min-neighbours: 2
     join-hop-limit: 3
@@ -28,4 +28,4 @@ app:
     r-ping-message-id: "rPingMessage"
     file-name: "FileNames.txt"
 server:
-  port: 8082
+  port: 8080

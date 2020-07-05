@@ -61,7 +61,7 @@ public class SearchRequestHandler implements AbstractResponseHandler, AbstractRe
 
     @Override
     public void handleResponse(ChannelMessage message) {
-        log.info("received message: {} from:{} port:{}", message.getMessage(), message.getAddress(), message.getPort());
+        log.info("received message: {}", message);
         String[] splitMessage = message.getMessage().split(" ");
         String address = splitMessage[2].trim();
         int port = Integer.parseInt(splitMessage[3].trim());

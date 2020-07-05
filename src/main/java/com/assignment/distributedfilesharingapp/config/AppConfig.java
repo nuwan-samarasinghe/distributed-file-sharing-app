@@ -68,7 +68,7 @@ public class AppConfig {
         this.queryRequestHandler = queryRequestHandler;
         responseHandlerFactory = new ResponseHandlerFactory(pingRequestHandler, pongRequestHandler, searchRequestHandler, queryRequestHandler);
         this.environment = environment;
-        this.nodeName = environment.getProperty("app.bootstrap-server.node-name");
+        this.nodeName = environment.getProperty("app.node.node-name");
         init();
     }
 
@@ -121,6 +121,13 @@ public class AppConfig {
         this.queryRequestHandler.setSearchResults(searchResults);
         this.queryRequestHandler.setSearchInitiatedTime(System.currentTimeMillis());
         this.messageBrokerThread.doSearch(fileName);
+        log.info("Please be patient till the file results are returned ...");
+        try {
+            Thread.sleep(3000);
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return searchResults;
     }
 }

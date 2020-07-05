@@ -22,7 +22,7 @@ public class DistributedFileSharingAppApplication {
 
     @Bean
     public Node getNode() {
-        return new Node(Objects.requireNonNull(environment.getProperty("app.bootstrap-server.node-name")));
+        return new Node(Objects.requireNonNull(environment.getProperty("app.node.node-name")));
     }
 
     public static void main(String[] args) {
