@@ -6,13 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class RoutingTable {
 
     @Getter
-    private final List<Neighbour> neighbours = Collections.synchronizedList(new ArrayList<>());
+    private final List<Neighbour> neighbours = new CopyOnWriteArrayList<>();
     @Getter
     private final String address;
     @Getter
@@ -23,7 +24,7 @@ public class RoutingTable {
         this.port = port;
     }
 
-    public synchronized Integer addNeighbour(String address, Integer port, Integer clientPort, Integer maxNeighbours) {
+    public Integer addNeighbour(String address, Integer port, Integer clientPort, Integer maxNeighbours) {
         if (!neighbours.isEmpty()) {
             for (Neighbour neighbour : neighbours) {
                 if (neighbour.getAddress().equals(address) && neighbour.getPort().equals(port)) {
@@ -36,20 +37,22 @@ public class RoutingTable {
             log.info("Cannot add neighbour : " + address + ":" + port);
             return 0;
         }
-        neighbours.add(new Neighbour(address, port, clientPort));
-        log.info("Adding neighbour : " + address + ":" + port);
+        synchronized (RoutingTable.class) {
+            neighbours.add(new Neighbour(address, port, clientPort));
+            log.info("Adding neighbour : " + address + ":" + port);
+        }
         return neighbours.size();
     }
 
-    public synchronized Integer removeNeighbour(String address, Integer port) {
+    public Integer removeNeighbour(String address, Integer port) {
         if (!neighbours.isEmpty()) {
-            return (int) neighbours.stream().map(neighbour -> {
+            neighbours.forEach(neighbour -> {
                 if (neighbour.getAddress().equals(address) && neighbour.getPort().equals(port)) {
                     log.info("remove neighbour address {} and port is {}", address, port);
                     neighbours.remove(neighbour);
                 }
-                return neighbours.size();
-            }).count();
+            });
+            return neighbours.size();
         }
         return 0;
     }

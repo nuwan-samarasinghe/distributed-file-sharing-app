@@ -10,12 +10,12 @@ import java.net.InetAddress;
 import java.util.concurrent.BlockingQueue;
 
 @Slf4j
-public class UDPClient extends Thread {
+public class MessageSender extends Thread {
     private final BlockingQueue<ChannelMessage> channelOut;
     private final DatagramSocket socket;
     private volatile boolean process = true;
 
-    public UDPClient(BlockingQueue<ChannelMessage> channelOut, DatagramSocket socket) {
+    public MessageSender(BlockingQueue<ChannelMessage> channelOut, DatagramSocket socket) {
         this.channelOut = channelOut;
         this.socket = socket;
     }
@@ -28,17 +28,19 @@ public class UDPClient extends Thread {
                 String address = message.getAddress();
                 int port = message.getPort();
                 String payload = message.getMessage();
-                // log.info("udp client sending the message {} address:{} port:{}", message.getMessage(), message.getAddress(), message.getPort());
+                log.info("sending message {}", message);
                 DatagramPacket packet = new DatagramPacket(payload.getBytes(), payload.length(), InetAddress.getByName(address), port);
                 socket.send(packet);
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException e) {
                 log.error("an error occurred while sending the message", e);
+            } catch (InterruptedException e) {
+                log.info("interrupting the thread {}", Thread.interrupted());
             }
         }
         socket.close();
     }
 
-    public void stopProcessing() {
+    public void stopSending() {
         this.process = false;
     }
 }

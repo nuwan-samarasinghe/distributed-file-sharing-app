@@ -28,4 +28,4 @@ app:
     r-ping-message-id: "rPingMessage"
     file-name: "FileNames.txt"
 server:
-  port: 8083
+  port: 8080

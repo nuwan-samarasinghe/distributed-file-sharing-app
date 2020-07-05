@@ -10,12 +10,12 @@ import java.net.DatagramSocket;
 import java.util.concurrent.BlockingQueue;
 
 @Slf4j
-public class UDPServer extends Thread {
+public class MessageReceiver extends Thread {
     private final BlockingQueue<ChannelMessage> channelIn;
     private final DatagramSocket socket;
     private volatile boolean process = true;
 
-    public UDPServer(BlockingQueue<ChannelMessage> channelIn, DatagramSocket socket) {
+    public MessageReceiver(BlockingQueue<ChannelMessage> channelIn, DatagramSocket socket) {
         this.channelIn = channelIn;
         this.socket = socket;
     }
@@ -32,7 +32,7 @@ public class UDPServer extends Thread {
                 int port = Integer.parseInt(((packet.getSocketAddress().toString()).substring(1)).split(":")[1]);
                 String body = new String(response, 0, response.length);
                 ChannelMessage message = new ChannelMessage(address, port, body);
-                // log.info("udp client sending the message {} address:{} port:{}", message.getMessage(), message.getAddress(), message.getPort());
+                log.info("received the message:{}", message);
                 channelIn.put(message);
             } catch (IOException | InterruptedException e) {
                 log.error("an error occurred while sending the message", e);
@@ -41,7 +41,7 @@ public class UDPServer extends Thread {
         socket.close();
     }
 
-    public void stopProcessing() {
+    public void stopReceiving() {
         this.process = false;
     }
 }

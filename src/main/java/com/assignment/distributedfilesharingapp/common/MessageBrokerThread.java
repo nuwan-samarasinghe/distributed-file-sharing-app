@@ -32,8 +32,8 @@ public class MessageBrokerThread implements Runnable {
     private final TimeOutManager timeoutManager;
     private final FileManager fileManager;
     private final ResponseHandlerFactory responseHandlerFactory;
-    private final UDPServer server;
-    private final UDPClient client;
+    private final MessageReceiver server;
+    private final MessageSender client;
     private final QueryRequestHandler queryRequestHandler;
     private final SearchRequestHandler searchRequestHandler;
 
@@ -68,9 +68,8 @@ public class MessageBrokerThread implements Runnable {
         this.responseHandlerFactory = responseHandlerFactory;
 
         DatagramSocket socket = new DatagramSocket(this.port);
-        this.server = new UDPServer(channelIn, socket);
-
-        this.client = new UDPClient(channelOut, new DatagramSocket());
+        this.server = new MessageReceiver(channelIn, socket);
+        this.client = new MessageSender(channelOut, new DatagramSocket());
 
         log.info("starting the server");
         timeoutManager.registerMessage(rPingMessageId, pingInterval, new TimeOutCallback() {

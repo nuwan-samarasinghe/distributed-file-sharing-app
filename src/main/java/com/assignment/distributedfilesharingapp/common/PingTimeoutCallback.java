@@ -32,7 +32,7 @@ public class PingTimeoutCallback implements TimeOutCallback {
     public void onTimeout(String messageId) {
         pingFailureCount.put(messageId, pingFailureCount.get(messageId) + 1);
         if (pingFailureCount.get(messageId) >= pingRetry) {
-            log.info("neighbour lost :( =>" + messageId);
+            log.info("neighbour lost :{}", messageId);
             routingTable.removeNeighbour(messageId.split(":")[1], Integer.valueOf(messageId.split(":")[2]));
         }
         if (routingTable.getNeighboursCount() < minNeighbours) {
