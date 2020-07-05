@@ -12,8 +12,8 @@ app:
     un-register-format: "UNREG %s %s %s"
     message-format: "%04d %s"
     leave-format: "LEAVE %s %s"
-    bping-format: "BPING %s %s %s"
-    bpong-format: "BPONG %s %s"
+    join-format: "JOIN %s %s %s"
+    joinok-format: "JOINOK %s %s"
     pong-format: "PONG %s %s"
     ping-message-id-format: "PINGID:%s:%s"
     query-format: "SER %s %s %s %s"
@@ -22,10 +22,10 @@ app:
   node:
     max-neighbours: 6
     min-neighbours: 2
-    bping-hop-limit: 3
+    join-hop-limit: 3
     hop-count: 5
   common:
     r-ping-message-id: "rPingMessage"
     file-name: "FileNames.txt"
 server:
-  port: 8080
+  port: 8082

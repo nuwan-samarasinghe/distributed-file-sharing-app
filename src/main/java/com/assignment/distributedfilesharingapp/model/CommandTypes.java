@@ -4,5 +4,5 @@ import lombok.Getter;
 
 @Getter
 public enum CommandTypes {
-    REGOK,UNROK,BPING,LEAVE,BPONG;
+    REGOK,UNROK,JOIN,LEAVE,JOINOK;
 }

@@ -28,13 +28,13 @@ public class ResponseHandlerFactory {
     public AbstractResponseHandler getResponseHandler(String keyword, MessageBrokerThread messageBroker) {
         switch (keyword) {
             case "PING":
-            case "BPING":
+            case "JOIN":
 
             case "LEAVE":
                 this.pingRequestHandler.init(messageBroker.getRoutingTable(), messageBroker.getChannelOut(), messageBroker.getTimeoutManager());
                 return this.pingRequestHandler;
             case "PONG":
-            case "BPONG":
+            case "JOINOK":
                 this.pongRequestHandler.init(messageBroker.getRoutingTable(), messageBroker.getChannelOut(), messageBroker.getTimeoutManager());
                 return this.pongRequestHandler;
             case "SER":

@@ -4,13 +4,16 @@ import com.assignment.distributedfilesharingapp.common.handlers.*;
 import com.assignment.distributedfilesharingapp.model.ChannelMessage;
 import com.assignment.distributedfilesharingapp.model.Neighbour;
 import com.assignment.distributedfilesharingapp.model.RoutingTable;
+import com.assignment.distributedfilesharingapp.service.BootstrapServerService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 
 import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -48,7 +51,8 @@ public class MessageBrokerThread implements Runnable {
             ResponseHandlerFactory responseHandlerFactory,
             QueryRequestHandler queryRequestHandler,
             SearchRequestHandler searchRequestHandler,
-            Environment environment) throws SocketException {
+            Environment environment,
+            List<InetSocketAddress> neighbourNodes) throws SocketException {
 
         this.address = address;
         this.port = port;
@@ -71,6 +75,13 @@ public class MessageBrokerThread implements Runnable {
         this.server = new MessageReceiver(channelIn, socket);
         this.client = new MessageSender(channelOut, new DatagramSocket());
 
+        neighbourNodes.forEach(neighbourNode -> routingTable.addNeighbour(
+                neighbourNode.getAddress().getHostAddress(),
+                neighbourNode.getPort(),
+                port,
+                Integer.parseInt(Objects.requireNonNull(environment.getProperty("app.node.max-neighbours")))));
+        log.info("adding initial nodes {}", routingTable.getNeighbours());
+
         log.info("starting the server");
         timeoutManager.registerMessage(rPingMessageId, pingInterval, new TimeOutCallback() {
             @Override
@@ -82,12 +93,12 @@ public class MessageBrokerThread implements Runnable {
             public void onResponse(String messageId) {
                 // empty method
             }
-
         });
     }
 
     private void sendRoutinePing() {
         List<Neighbour> neighbours = routingTable.getNeighbours();
+        log.info("send routing ping {}", neighbours);
         neighbours.forEach(neighbour -> this.pingRequestHandler.sendPing(neighbour.getAddress(), neighbour.getPort()));
     }
 
@@ -98,13 +109,10 @@ public class MessageBrokerThread implements Runnable {
         this.process();
     }
 
-    public void sendPing(String address, int port) {
-        this.pingRequestHandler.sendPing(address, port);
-    }
-
     private void process() {
         do {
             try {
+                timeoutManager.checkForTimeout();
                 ChannelMessage message = channelIn.poll(100, TimeUnit.MILLISECONDS);
                 if (message != null) {
                     log.info("found the message {}", message.getMessage());
@@ -113,7 +121,6 @@ public class MessageBrokerThread implements Runnable {
                         abstractResponseHandler.handleResponse(message);
                     }
                 }
-                timeoutManager.checkForTimeout();
             } catch (InterruptedException e) {
                 log.error("an error occurred while processing the message", e);
             }

@@ -32,8 +32,7 @@ public class TimeOutManager {
         requests.keySet().forEach(requestString -> {
             if (requests.get(requestString).checkTimeout(requestString)) {
                 if (requestString.equals(this.environment.getProperty("app.common.r-ping-message-id"))) {
-                    requests.get(requestString).setTimeoutTime(requests.get(requestString).getTimeoutTime()
-                            + requests.get(requestString).getTimeout());
+                    requests.get(requestString).setTimeoutTime(requests.get(requestString).getTimeoutTime() + requests.get(requestString).getTimeout());
                 } else {
                     requests.remove(requestString);
                 }

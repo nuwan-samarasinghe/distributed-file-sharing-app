@@ -8,17 +8,20 @@ import com.assignment.distributedfilesharingapp.model.SearchResult;
 import com.assignment.distributedfilesharingapp.service.BootstrapServerService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
 
 @Slf4j
-@Configuration
+@Component
 public class AppConfig {
 
     private String nodeName;
@@ -49,6 +52,7 @@ public class AppConfig {
     private Node node;
 
     public AppConfig(
+            Node node,
             BootstrapServerService bootstrapServerService,
             PingRequestHandler pingRequestHandler,
             LeaveRequestHandler leaveRequestHandler,
@@ -56,6 +60,7 @@ public class AppConfig {
             SearchRequestHandler searchRequestHandler,
             QueryRequestHandler queryRequestHandler,
             Environment environment) throws SocketException {
+        this.node = node;
         this.bootstrapServerService = bootstrapServerService;
         this.pingRequestHandler = pingRequestHandler;
         this.leaveRequestHandler = leaveRequestHandler;
@@ -68,7 +73,7 @@ public class AppConfig {
     }
 
     private void init() throws SocketException {
-        this.node = new Node(nodeName);
+        this.node = getNode();
         List<InetSocketAddress> neighbourNodes = new ArrayList<>();
         log.info("node created {}", node);
         try {
@@ -92,13 +97,10 @@ public class AppConfig {
                 responseHandlerFactory,
                 this.queryRequestHandler,
                 this.searchRequestHandler,
-                this.environment);
+                this.environment,
+                neighbourNodes
+        );
         new Thread(messageBrokerThread).start();
-
-        // send pings to the nodes
-        neighbourNodes
-                .forEach(neighbourNode -> this.messageBrokerThread.sendPing(neighbourNode.getAddress().getHostAddress(), neighbourNode.getPort()));
-
     }
 
     public void unregisterNode() {

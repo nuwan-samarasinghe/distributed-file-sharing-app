@@ -1,7 +1,6 @@
 package com.assignment.distributedfilesharingapp.common.handlers;
 
 import com.assignment.distributedfilesharingapp.common.PingTimeoutCallback;
-import com.assignment.distributedfilesharingapp.common.TimeOutCallback;
 import com.assignment.distributedfilesharingapp.common.TimeOutManager;
 import com.assignment.distributedfilesharingapp.model.ChannelMessage;
 import com.assignment.distributedfilesharingapp.model.CommandTypes;
@@ -25,8 +24,8 @@ public class PingRequestHandler implements AbstractRequestHandler, AbstractRespo
     private TimeOutManager timeoutManager;
     private final Map<String, Integer> pingFailureCount = new HashMap<>();
 
-    @Value("${app.commands.bping-format}")
-    private String bPingFormat;
+    @Value("${app.commands.join-format}")
+    private String joinFormat;
 
     @Value("${app.commands.message-format}")
     private String messageFormat;
@@ -40,11 +39,11 @@ public class PingRequestHandler implements AbstractRequestHandler, AbstractRespo
     @Value("${app.node.min-neighbours}")
     private Integer minNeighbours;
 
-    @Value("${app.node.bping-hop-limit}")
-    private Integer bpingHopLimit;
+    @Value("${app.node.join-hop-limit}")
+    private Integer joinHopLimit;
 
-    @Value("${app.commands.bpong-format}")
-    private String bPongFormat;
+    @Value("${app.commands.joinok-format}")
+    private String joinOkFormat;
 
     @Value("${app.commands.ping-format}")
     private String pingFormat;
@@ -72,8 +71,8 @@ public class PingRequestHandler implements AbstractRequestHandler, AbstractRespo
     public synchronized void handleResponse(ChannelMessage message) {
         log.info("ping received from {} port {} and the message is {}", message.getAddress(), message.getPort(), message.getMessage());
         String[] messageSplitArray = message.getMessage().split(" ");
-        // if command type id BPING
-        if (messageSplitArray[1].equals(CommandTypes.BPING.name())) {
+        // if command type id JOIN
+        if (messageSplitArray[1].equals(CommandTypes.JOIN.name())) {
             // if the given message is sent by a neighbour pass it to other neighbours.
             if (this.routingTable.isANeighbour(message.getAddress(), message.getPort())) {
                 if (Integer.parseInt(messageSplitArray[4]) > 0) {
@@ -82,12 +81,12 @@ public class PingRequestHandler implements AbstractRequestHandler, AbstractRespo
             } else {
                 // check are we able to add a neighbour to the node
                 if (routingTable.getNeighboursCount() < maxNeighbours) {
-                    // sending a bpong request
-                    String payload = String.format(bPongFormat, this.routingTable.getAddress(), this.routingTable.getPort());
+                    // sending a join ok request
+                    String payload = String.format(joinOkFormat, this.routingTable.getAddress(), this.routingTable.getPort());
                     String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
                     ChannelMessage outGoingMsg = new ChannelMessage(messageSplitArray[2], Integer.parseInt(messageSplitArray[3]), rawMessage);
                     this.sendRequest(outGoingMsg);
-                    log.info("sending a bpong request {}", payload);
+                    log.info("sending a join ok request {}", payload);
                 } else {
                     //otherwise send it to the neighbours
                     if (Integer.parseInt(messageSplitArray[4]) > 0) {
@@ -113,7 +112,6 @@ public class PingRequestHandler implements AbstractRequestHandler, AbstractRespo
     }
 
     public void sendPing(String address, int port) {
-        // log.info("send a ping to address: {} port:{}", address, port);
         String payload = String.format(pingFormat, this.routingTable.getAddress(), this.routingTable.getPort());
         String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
         ChannelMessage message = new ChannelMessage(address, port, rawMessage);
@@ -128,7 +126,7 @@ public class PingRequestHandler implements AbstractRequestHandler, AbstractRespo
 
     public void sendBootstrapPing(String address, int port) {
         List<Neighbour> otherNeighbours = routingTable.getOtherNeighbours(address, port);
-        String payload = String.format(bPingFormat, this.routingTable.getAddress(), this.routingTable.getPort(), bpingHopLimit);
+        String payload = String.format(joinFormat, this.routingTable.getAddress(), this.routingTable.getPort(), joinHopLimit);
         String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
         otherNeighbours.forEach(neighbour -> {
             ChannelMessage message = new ChannelMessage(neighbour.getAddress(), neighbour.getPort(), rawMessage);
@@ -138,7 +136,7 @@ public class PingRequestHandler implements AbstractRequestHandler, AbstractRespo
 
     private void forwardBootstrapPing(String address, Integer port, int hops) {
         List<Neighbour> otherNeighbours = routingTable.getOtherNeighbours(address, port);
-        String payload = String.format(bPingFormat, address, port, hops);
+        String payload = String.format(joinFormat, address, port, hops);
         String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
         otherNeighbours.forEach(neighbour -> {
             ChannelMessage message = new ChannelMessage(neighbour.getAddress(), neighbour.getPort(), rawMessage);
