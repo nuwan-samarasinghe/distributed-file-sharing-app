@@ -31,7 +31,7 @@ public class PongRequestHandler implements AbstractRequestHandler, AbstractRespo
 
     @Override
     public void handleResponse(ChannelMessage message) {
-        log.info("receiving a pong request message:{} address:{} port:{}", message.getMessage(), message.getAddress(), message.getPort());
+        // log.info("receiving a pong request message:{} address:{} port:{}", message.getMessage(), message.getAddress(), message.getPort());
         String[] messageSplit = message.getMessage().split(" ");
         if (messageSplit[1].equals(CommandTypes.JOINOK.name())) {
             if (routingTable.getNeighboursCount() < maxNeighbours) {

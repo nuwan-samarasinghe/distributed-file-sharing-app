@@ -24,7 +24,7 @@ public class TimeOutManager {
     }
 
     public void removeMessage(String messageId) {
-        log.info("RegisteringResponse : " + messageId);
+        // log.info("RegisteringResponse : " + messageId);
         requests.remove(messageId);
     }
 

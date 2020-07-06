@@ -69,7 +69,9 @@ public class AppConfig {
         responseHandlerFactory = new ResponseHandlerFactory(pingRequestHandler, pongRequestHandler, searchRequestHandler, queryRequestHandler);
         this.environment = environment;
         this.nodeName = environment.getProperty("app.node.node-name");
-        init();
+        if (!Boolean.parseBoolean(this.environment.getProperty("app.common.enable-console"))) {
+            init();
+        }
     }
 
     private void init() throws SocketException {

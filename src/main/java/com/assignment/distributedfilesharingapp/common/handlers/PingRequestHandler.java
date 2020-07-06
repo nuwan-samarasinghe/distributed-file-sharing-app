@@ -69,7 +69,7 @@ public class PingRequestHandler implements AbstractRequestHandler, AbstractRespo
 
     @Override
     public synchronized void handleResponse(ChannelMessage message) {
-        log.info("ping received from {} port {} and the message is {}", message.getAddress(), message.getPort(), message.getMessage());
+        // log.info("ping received from {} port {} and the message is {}", message.getAddress(), message.getPort(), message.getMessage());
         String[] messageSplitArray = message.getMessage().split(" ");
         // if command type id JOIN
         if (messageSplitArray[1].equals(CommandTypes.JOIN.name())) {
