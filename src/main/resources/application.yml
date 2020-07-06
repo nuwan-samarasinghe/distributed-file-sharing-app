@@ -31,6 +31,6 @@ server:
   port: 8081
   ssl:
     key-store-type: PKCS12
-    key-store: "/home/nsamarasinghe/MyProjects/distributed-file-sharing-app/src/main/resources/distributed-file-sharing-app.p12"
+    key-store: "./src/main/resources/distributed-file-sharing-app.p12"
     key-store-password: 1qaz2wsx!QAZ@WSX
     enabled: true
