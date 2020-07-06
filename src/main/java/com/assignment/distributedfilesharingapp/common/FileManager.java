@@ -1,7 +1,6 @@
 package com.assignment.distributedfilesharingapp.common;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.*;
 import java.util.*;
@@ -11,15 +10,29 @@ import java.util.stream.IntStream;
 @Slf4j
 public class FileManager {
 
+    private static FileManager FILE_MANAGER;
+
     private final Map<String, String> files = new HashMap<>();
     private final String rootFolder;
-    private final String fileSeparator = "/";
 
     private String fileName;
 
-    public FileManager(String userName, String fileName) {
+    public static FileManager getInstance(String userName, String fileName) {
+        if (Objects.isNull(FILE_MANAGER)) {
+            synchronized (FileManager.class) {
+                if (Objects.isNull(FILE_MANAGER)) {
+                    FILE_MANAGER = new FileManager(userName, fileName);
+                }
+                return FILE_MANAGER;
+            }
+        } else {
+            return FILE_MANAGER;
+        }
+    }
+
+    private FileManager(String userName, String fileName) {
         this.fileName = fileName;
-        this.rootFolder = "." + fileSeparator + userName;
+        this.rootFolder = "." + "/" + userName;
         ArrayList<String> fullList = readFileNamesFromResources();
         Random random = new Random();
         IntStream.range(0, 5).forEach(i -> files.put(fullList.get(random.nextInt(fullList.size())), ""));
@@ -81,7 +94,7 @@ public class FileManager {
 
     public void createFile(String fileName) {
         try {
-            String absoluteFilePath = this.rootFolder + fileSeparator + fileName;
+            String absoluteFilePath = this.rootFolder + "/" + fileName;
             File file = new File(absoluteFilePath);
             file.getParentFile().mkdir();
             if (file.createNewFile()) {
@@ -95,6 +108,6 @@ public class FileManager {
     }
 
     public File getFile(String fileName) {
-        return new File(rootFolder + fileSeparator + fileName);
+        return new File(rootFolder + "/" + fileName);
     }
 }

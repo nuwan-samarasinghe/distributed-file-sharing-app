@@ -32,7 +32,7 @@ public class MessageReceiver extends Thread {
                 int port = Integer.parseInt(((packet.getSocketAddress().toString()).substring(1)).split(":")[1]);
                 String body = new String(response, 0, response.length);
                 ChannelMessage message = new ChannelMessage(address, port, body);
-                log.info("received the message:{}", message);
+                // log.info("received the message:{}", message);
                 channelIn.put(message);
             } catch (IOException | InterruptedException e) {
                 log.error("an error occurred while sending the message", e);

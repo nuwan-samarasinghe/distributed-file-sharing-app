@@ -83,7 +83,7 @@ public class AppConfig {
             log.error("An error occurred while registering the node in bootstrap server", e);
         }
 
-        this.fileManager = new FileManager(this.username, this.environment.getProperty("app.common.file-name"));
+        this.fileManager = FileManager.getInstance(this.username, this.environment.getProperty("app.common.file-name"));
         this.searchRequestHandler.setFileManager(fileManager);
 
         this.messageBrokerThread = new MessageBrokerThread(

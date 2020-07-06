@@ -114,7 +114,7 @@ public class MessageBrokerThread implements Runnable {
                 timeoutManager.checkForTimeout();
                 ChannelMessage message = channelIn.poll(100, TimeUnit.MILLISECONDS);
                 if (message != null) {
-                    log.info("found the message {}", message.getMessage());
+                    // log.info("found the message {}", message.getMessage());
                     AbstractResponseHandler abstractResponseHandler = responseHandlerFactory.getResponseHandler(message.getMessage().split(" ")[1], this);
                     if (abstractResponseHandler != null) {
                         abstractResponseHandler.handleResponse(message);
