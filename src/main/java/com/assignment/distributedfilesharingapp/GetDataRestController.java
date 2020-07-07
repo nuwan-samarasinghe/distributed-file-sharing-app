@@ -1,6 +1,7 @@
 package com.assignment.distributedfilesharingapp;
 
 import com.assignment.distributedfilesharingapp.config.AppConfig;
+import com.assignment.distributedfilesharingapp.model.Node;
 import com.assignment.distributedfilesharingapp.model.RoutingTableDocument;
 import com.assignment.distributedfilesharingapp.model.SearchResult;
 import com.assignment.distributedfilesharingapp.service.FileService;
@@ -9,12 +10,17 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
+@CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 public class GetDataRestController {
+
+    private final Node node;
 
     private final AppConfig appConfig;
 
@@ -22,7 +28,8 @@ public class GetDataRestController {
 
     private final Environment environment;
 
-    public GetDataRestController(AppConfig appConfig, FileService fileService, Environment environment) {
+    public GetDataRestController(Node node, AppConfig appConfig, FileService fileService, Environment environment) {
+        this.node = node;
         this.appConfig = appConfig;
         this.fileService = fileService;
         this.environment = environment;
@@ -31,6 +38,11 @@ public class GetDataRestController {
     @GetMapping(value = "/ip-table")
     private RoutingTableDocument printIpTable() {
         return appConfig.getMessageBrokerThread().getRoutingTable().getRoutingTableDocument();
+    }
+
+    @GetMapping(value = "/node")
+    private ResponseEntity<Node> getNode() {
+        return ResponseEntity.ok().body(node);
     }
 
     @DeleteMapping(value = "/node")
@@ -46,10 +58,9 @@ public class GetDataRestController {
         return ResponseEntity.ok().body(this.appConfig.getFileManager().getFileNamesList());
     }
 
-    @PostMapping(value = "/file/{fileName}")
-    private ResponseEntity<Map<String, SearchResult>> getSearchedFileList(@PathVariable("fileName") String fileName) {
-        Map<String, SearchResult> stringSearchResultMap = this.appConfig.doSearch(fileName);
-        return ResponseEntity.ok().body(stringSearchResultMap);
+    @GetMapping(value = "/file/{fileName}")
+    private ResponseEntity<List<SearchResult>> getSearchedFileList(@PathVariable("fileName") String fileName) {
+        return ResponseEntity.ok().body(new ArrayList<>(this.appConfig.doSearch(fileName).values()));
     }
 
     @PostMapping(value = "/file/download")
