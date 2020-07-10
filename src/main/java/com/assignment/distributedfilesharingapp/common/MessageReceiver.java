@@ -1,6 +1,7 @@
 package com.assignment.distributedfilesharingapp.common;
 
 
+import com.assignment.distributedfilesharingapp.common.strategy.MessageType;
 import com.assignment.distributedfilesharingapp.model.ChannelMessage;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,7 +32,7 @@ public class MessageReceiver extends Thread {
                 String address = ((packet.getSocketAddress().toString()).substring(1)).split(":")[0];
                 int port = Integer.parseInt(((packet.getSocketAddress().toString()).substring(1)).split(":")[1]);
                 String body = new String(response, 0, response.length);
-                ChannelMessage message = new ChannelMessage(address, port, body);
+                ChannelMessage message = new ChannelMessage(MessageType.PONG,address, port, body);
                 // log.info("received the message:{}", message);
                 channelIn.put(message);
             } catch (IOException | InterruptedException e) {
