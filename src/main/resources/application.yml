@@ -3,9 +3,9 @@ app:
     ip-address: "127.0.0.1"
     port: 55555
     timeout: 10000
-    ping-interval: 8000
-    ping-timeout: 3000
-    ping-retry: 3
+    message-interval: 8000
+    message-timeout: 3000
+    message-retry: 3
   commands:
     register-format: "REG %s %s %s"
     un-register-format: "UNREG %s %s %s"
@@ -23,9 +23,9 @@ app:
     join-hop-limit: 3
     hop-count: 5
   common:
-    r-ping-message-id: "rPingMessage"
+    r-join-message-id: "rJoinMessage"
     file-name: "FileNames.txt"
-    enable-console: false
+    enable-console: true
 server:
   port: 8080
   ssl:

@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 
 @Slf4j
-public class PingTimeoutCallback implements TimeOutCallback {
+public class JoinTimeout implements TimeOut {
 
     private final Map<String, Integer> joinFailureCount;
     private final RoutingTable routingTable;
@@ -15,7 +15,7 @@ public class PingTimeoutCallback implements TimeOutCallback {
     private final Integer minNeighbours;
     private final HeartBeatHandlingStrategy heartBeatHandlingStrategy;
 
-    public PingTimeoutCallback(
+    public JoinTimeout(
             Map<String, Integer> joinFailureCount,
             RoutingTable routingTable,
             Integer joinRetry,
@@ -32,7 +32,7 @@ public class PingTimeoutCallback implements TimeOutCallback {
     public void onTimeout(String messageId) {
         joinFailureCount.put(messageId, joinFailureCount.get(messageId) + 1);
         if (joinFailureCount.get(messageId) >= joinRetry) {
-            log.info("neighbour lost :{}", messageId);
+            log.info("Neighbour seems to be not in active mode :{}", messageId);
             routingTable.removeNeighbour(messageId.split(":")[ 1 ], Integer.valueOf(messageId.split(":")[ 2 ]));
         }
         if (routingTable.getNeighboursCount() < minNeighbours) {

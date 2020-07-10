@@ -53,7 +53,7 @@ public class BootstrapServerService {
     public List<InetSocketAddress> register(String userName, String ipAddress, int port) throws IOException {
         String request = String.format(registerFormat, ipAddress, port, userName);
         request = String.format(messageFormat, request.length() + 5, request);
-        return processBootstrapRegisterResponse(sendOrReceive(request));
+        return processBootstrapRegisterResponse(registerOrUnregister(request));
     }
 
     /**
@@ -67,7 +67,7 @@ public class BootstrapServerService {
     public boolean unRegister(String userName, String ipAddress, int port) throws IOException {
         String request = String.format(unRegisterFormat, ipAddress, port, userName);
         request = String.format(messageFormat, request.length() + 5, request);
-        return processBootstrapServerUnregisterResponse(sendOrReceive(request));
+        return processBootstrapServerUnregisterResponse(registerOrUnregister(request));
     }
 
     private boolean processBootstrapServerUnregisterResponse(String response) {
@@ -117,7 +117,7 @@ public class BootstrapServerService {
         }
     }
 
-    private String sendOrReceive(String request) throws IOException {
+    private String registerOrUnregister(String request) throws IOException {
         log.info("initiate send request for BS : {}", request);
         DatagramPacket sendingPacket = new DatagramPacket(request.getBytes(), request.length(), InetAddress.getByName(ipAddress), port);
         datagramSocket.setSoTimeout(timeout);

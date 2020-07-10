@@ -1,4 +1,4 @@
-package com.assignment.distributedfilesharingapp.common;
+package com.assignment.distributedfilesharingapp.config;
 
 import com.assignment.distributedfilesharingapp.model.Node;
 import com.assignment.distributedfilesharingapp.service.BootstrapServerService;

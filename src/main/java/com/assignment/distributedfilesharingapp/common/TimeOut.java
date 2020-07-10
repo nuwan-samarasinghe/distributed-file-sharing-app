@@ -1,6 +1,6 @@
 package com.assignment.distributedfilesharingapp.common;
 
-public interface TimeOutCallback {
+public interface TimeOut {
     void onTimeout(String messageId);
 
     void onResponse(String messageId);

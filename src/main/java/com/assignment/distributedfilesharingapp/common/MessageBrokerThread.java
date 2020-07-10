@@ -45,8 +45,8 @@ public class MessageBrokerThread implements Runnable {
             HeartBeatHandlingStrategy heartBeatHandlingStrategy,
             LeaveMessageHandlingStrategy leaveMessageHandlingStrategy,
             FileManager fileManager,
-            String rPingMessageId,
-            Integer pingInterval,
+            String rJoinMessageId,
+            Integer joinMessageInterval,
             MessageHandelingFactory messageHandelingFactory,
             QueryMessageHandlingStrategy queryMessageHandlingStrategy,
             FileSearchMessageHandlingStrategy fileSearchMessageHandlingStrategy,
@@ -81,7 +81,7 @@ public class MessageBrokerThread implements Runnable {
         log.info("adding initial nodes {}", routingTable.getNeighbours());
 
         log.info("starting the server");
-        timeoutManager.registerMessage(rPingMessageId, pingInterval, new TimeOutCallback() {
+        timeoutManager.registerMessage(rJoinMessageId, joinMessageInterval, new TimeOut() {
             @Override
             public void onTimeout(String messageId) {
                 sendRoutineJoin();
@@ -109,6 +109,7 @@ public class MessageBrokerThread implements Runnable {
     private void process() {
         do {
             try {
+                //remove inactive nodes based on retry count
                 timeoutManager.checkForTimeout();
                 ChannelMessage message = channelIn.poll(100, TimeUnit.MILLISECONDS);
                 if (message != null) {

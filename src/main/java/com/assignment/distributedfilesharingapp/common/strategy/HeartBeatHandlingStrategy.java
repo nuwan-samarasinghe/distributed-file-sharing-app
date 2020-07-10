@@ -1,6 +1,6 @@
 package com.assignment.distributedfilesharingapp.common.strategy;
 
-import com.assignment.distributedfilesharingapp.common.PingTimeoutCallback;
+import com.assignment.distributedfilesharingapp.common.JoinTimeout;
 import com.assignment.distributedfilesharingapp.common.TimeOutManager;
 import com.assignment.distributedfilesharingapp.model.ChannelMessage;
 import com.assignment.distributedfilesharingapp.model.MessageType;
@@ -22,7 +22,7 @@ public class HeartBeatHandlingStrategy implements MessageHandlingStrategy {
     private BlockingQueue<ChannelMessage> channelOut;
     private RoutingTable routingTable;
     private TimeOutManager timeoutManager;
-    private final Map<String, Integer> pingFailureCount = new HashMap<>();
+    private final Map<String, Integer> joinFailureCount = new HashMap<>();
 
     @Value("${app.commands.join-format}")
     private String joinFormat;
@@ -45,11 +45,11 @@ public class HeartBeatHandlingStrategy implements MessageHandlingStrategy {
     @Value("${app.commands.join-message-id-format}")
     private String joinMessageIdFormat;
 
-    @Value("${app.bootstrap-server.ping-timeout}")
-    private Integer pingTimeOut;
+    @Value("${app.bootstrap-server.message-timeout}")
+    private Integer messageTimeout;
 
-    @Value("${app.bootstrap-server.ping-retry}")
-    private Integer pingRetry;
+    @Value("${app.bootstrap-server.message-retry}")
+    private Integer messageRetry;
 
 
     @Override
@@ -147,11 +147,11 @@ public class HeartBeatHandlingStrategy implements MessageHandlingStrategy {
         String payload = String.format(joinFormat, this.routingTable.getNodeIp(), this.routingTable.getNodePort());
         String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
         ChannelMessage message = new ChannelMessage(MessageType.JOIN, address, port, rawMessage);
-        this.pingFailureCount.putIfAbsent(String.format(joinMessageIdFormat, address, port), 0);
+        this.joinFailureCount.putIfAbsent(String.format(joinMessageIdFormat, address, port), 0);
         this.timeoutManager.registerMessage(
                 String.format(joinMessageIdFormat, address, port),
-                pingTimeOut,
-                new PingTimeoutCallback(pingFailureCount, this.routingTable, pingRetry, minNeighbours, this));
+                messageTimeout,
+                new JoinTimeout(joinFailureCount, this.routingTable, messageRetry, minNeighbours, this));
         this.handleRequest(message);
     }
 

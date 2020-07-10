@@ -1,15 +1,15 @@
 package com.assignment.distributedfilesharingapp.model;
 
-import com.assignment.distributedfilesharingapp.common.TimeOutCallback;
+import com.assignment.distributedfilesharingapp.common.TimeOut;
 import lombok.Data;
 
 @Data
-public class TimeoutCallbackMap {
+public class TimeoutCallback {
     private Long timeoutTime;
-    private TimeOutCallback callback;
+    private TimeOut callback;
     private Long timeout;
 
-    public TimeoutCallbackMap(Long timeout, TimeOutCallback callback) {
+    public TimeoutCallback(Long timeout, TimeOut callback) {
         this.timeout = timeout;
         this.callback = callback;
         this.timeoutTime = System.currentTimeMillis() + timeout;
