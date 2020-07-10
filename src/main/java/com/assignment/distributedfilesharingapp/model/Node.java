@@ -12,7 +12,6 @@ import java.util.UUID;
 @Slf4j
 @Data
 public class Node {
-    public static final String IP_FORMAT = "8.8.8.8";
     private String userName;
     private String ipAddress;
     private Integer port;
@@ -21,13 +20,14 @@ public class Node {
     public Node(String nodeName) {
         String uniqueID = UUID.randomUUID().toString();
         this.userName = nodeName.replace("{uniqueID}", "" + uniqueID);
-        // get host ip address
+        // get current hosts' ip address
         try (final DatagramSocket socket = new DatagramSocket()) {
-            socket.connect(InetAddress.getByName(IP_FORMAT), 10002);
+            //set a dummy connection (no need to have reachable ip address)
+            socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
             this.ipAddress = socket.getLocalAddress().getHostAddress();
-            log.info("generated node ip is : {}", this.ipAddress);
+            log.info("Current IP address of your PC is : {}", this.ipAddress);
         } catch (Exception e) {
-            log.error("Could not find host address", e);
+            log.error("Could not find your PC ip address", e);
         }
 
         // generate port number
