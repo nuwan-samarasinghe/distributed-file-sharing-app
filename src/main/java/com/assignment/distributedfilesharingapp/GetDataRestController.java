@@ -2,7 +2,7 @@ package com.assignment.distributedfilesharingapp;
 
 import com.assignment.distributedfilesharingapp.config.AppConfig;
 import com.assignment.distributedfilesharingapp.model.Node;
-import com.assignment.distributedfilesharingapp.model.RoutingTableDocument;
+import com.assignment.distributedfilesharingapp.model.RoutingTable;
 import com.assignment.distributedfilesharingapp.model.SearchResult;
 import com.assignment.distributedfilesharingapp.service.FileService;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +36,8 @@ public class GetDataRestController {
     }
 
     @GetMapping(value = "/ip-table")
-    private RoutingTableDocument printIpTable() {
-        return appConfig.getMessageBrokerThread().getRoutingTable().getRoutingTableDocument();
+    private RoutingTable printIpTable() {
+        return appConfig.getMessageBrokerThread().getRoutingTable();
     }
 
     @GetMapping(value = "/node")

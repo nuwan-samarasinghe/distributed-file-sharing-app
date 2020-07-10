@@ -27,7 +27,7 @@ app:
   common:
     r-ping-message-id: "rPingMessage"
     file-name: "FileNames.txt"
-    enable-console: false
+    enable-console: true
 server:
   port: 8080
   ssl:

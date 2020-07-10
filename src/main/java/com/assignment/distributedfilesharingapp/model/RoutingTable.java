@@ -59,14 +59,6 @@ public class RoutingTable {
         return neighbours.size();
     }
 
-    public synchronized RoutingTableDocument getRoutingTableDocument() {
-        RoutingTableDocument routingTableDocument = new RoutingTableDocument();
-        routingTableDocument.setAddress(address);
-        routingTableDocument.setPort(port);
-        routingTableDocument.setNeighbours(neighbours);
-        return routingTableDocument;
-    }
-
     public synchronized void printRoutingTable() {
         log.info("\n\n--------------------------------");
         log.info("Total neighbours: {}", neighbours.size());
@@ -74,13 +66,6 @@ public class RoutingTable {
         log.info("--------------------------------");
         neighbours.forEach(neighbour -> log.info("Address: {} Port: {} Ping: {}", neighbour.getAddress(), neighbour.getPort(), neighbour.getPingPongs()));
         log.info("--------------------------------\n\n");
-    }
-
-    public synchronized List<String> getStringNeighbourList() {
-        return neighbours
-                .stream()
-                .map(Neighbour::toString)
-                .collect(Collectors.toList());
     }
 
     public boolean isANeighbour(String address, int port) {
