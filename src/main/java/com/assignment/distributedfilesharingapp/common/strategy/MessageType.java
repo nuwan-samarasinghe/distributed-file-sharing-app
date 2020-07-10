@@ -3,12 +3,13 @@ package com.assignment.distributedfilesharingapp.common.strategy;
 
 
 public enum MessageType {
-
-    PING("ping"),
-    PONG("pong"),
-    SER("search"),
-    SEROK("searchok"),
-    LEAVE("leave");
+    JOIN("JOIN"),
+    JOINOK("JOINOK"),
+    PING("PING"),
+    PONG("PONG"),
+    SER("SER"),
+    SEROK("SEROK"),
+    LEAVE("LEAVE");
 
     private String type;
 
@@ -19,5 +20,7 @@ public enum MessageType {
     public String type() {
         return type;
     }
+
+
 
 }

@@ -36,7 +36,7 @@ public class PingTimeoutCallback implements TimeOutCallback {
             routingTable.removeNeighbour(messageId.split(":")[1], Integer.valueOf(messageId.split(":")[2]));
         }
         if (routingTable.getNeighboursCount() < minNeighbours) {
-            heartBeatHandlingStrategy.sendBootstrapPing(messageId.split(":")[1], Integer.parseInt(messageId.split(":")[2]));
+            heartBeatHandlingStrategy.sendBootstrapJoin(messageId.split(":")[1], Integer.parseInt(messageId.split(":")[2]));
         }
     }
 

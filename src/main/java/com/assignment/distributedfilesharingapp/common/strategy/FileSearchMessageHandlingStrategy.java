@@ -42,10 +42,10 @@ public class FileSearchMessageHandlingStrategy implements MessageHandlingStrateg
     }
 
     public void doSearch(String keyword) {
-        String payload = String.format(queryFormat, this.routingTable.getAddress(), this.routingTable.getPort(), StringEncoderDecoder.encode(keyword), hopCount);
+        String payload = String.format(queryFormat, this.routingTable.getNodeIp(), this.routingTable.getNodePort(), StringEncoderDecoder.encode(keyword), hopCount);
         log.info("search for the given key word : {}", payload);
         String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
-        ChannelMessage initialMessage = new ChannelMessage(MessageType.SER,this.routingTable.getAddress(), this.routingTable.getPort(), rawMessage);
+        ChannelMessage initialMessage = new ChannelMessage(MessageType.SER,this.routingTable.getNodeIp(), this.routingTable.getNodePort(), rawMessage);
         this.handleResponse(initialMessage);
     }
 
@@ -81,7 +81,7 @@ public class FileSearchMessageHandlingStrategy implements MessageHandlingStrateg
                     .stream()
                     .map(s -> StringEncoderDecoder.encode(s) + " ")
                     .collect(Collectors.joining("", "", ""));
-            String payload = String.format(queryHitFormat, resultSet.size(), routingTable.getAddress(), routingTable.getPort(), hopCount - hops, fileNamesString);
+            String payload = String.format(queryHitFormat, resultSet.size(), routingTable.getNodeIp(), routingTable.getNodePort(), hopCount - hops, fileNamesString);
             log.info("requesting the file {}", payload);
             String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
             ChannelMessage queryHitMessage = new ChannelMessage(MessageType.SER,address, port, rawMessage);
@@ -93,7 +93,7 @@ public class FileSearchMessageHandlingStrategy implements MessageHandlingStrateg
             this.routingTable
                     .getNeighbours()
                     .stream()
-                    .filter(neighbour -> !neighbour.getAddress().equals(message.getAddress()) || !Objects.equals(neighbour.getClientPort(), message.getPort()))
+                    .filter(neighbour -> !neighbour.getAddress().equals(message.getAddress()) || !Objects.equals(neighbour.getPort(), message.getPort()))
                     .forEach(neighbour -> {
                         String payload = String.format(queryFormat, address, port, StringEncoderDecoder.encode(fileName), hops - 1);
                         log.info("send request to neighbours {}", payload);

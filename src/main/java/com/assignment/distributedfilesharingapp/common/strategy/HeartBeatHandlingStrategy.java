@@ -77,36 +77,44 @@ public class HeartBeatHandlingStrategy implements MessageHandlingStrategy {
 
     @Override
     public void handleResponse(ChannelMessage message) {
-        if(message.getType()==MessageType.PING){
-            handlePingResponse(message);
+        /*
+        this will call when inbound que has messages with JOIN or JOINOK
+        JOIN - When other node need to connect with this node
+        JOINOK - When this node want to connect other node and received success response
+         */
+        if(message.getType()==MessageType.JOIN){
+            handleIncommingMessage(message);
         }
 
         handlePongResponse(message);
     }
 
-    synchronized void handlePingResponse(ChannelMessage pingResponseMessage){
-        // log.info("ping received from {} port {} and the message is {}", message.getAddress(), message.getPort(), message.getMessage());
-        String[] messageSplitArray = pingResponseMessage.getMessage().split(" ");
-        // if command type id JOIN
-        if (messageSplitArray[1].equals(CommandTypes.JOIN.name())) {
+    synchronized void handleIncommingMessage(ChannelMessage inboundMessage){
+
+        String[] messageSplitArray = inboundMessage.getMessage().split(" ");
+        MessageType messageType=MessageType.valueOf(messageSplitArray[1]);
+
+        // if new node need to connect/join with our node
+        if (MessageType.JOIN==messageType) {
             // if the given message is sent by a neighbour pass it to other neighbours.
-            if (this.routingTable.isANeighbour(pingResponseMessage.getAddress(), pingResponseMessage.getPort())) {
+            if (this.routingTable.isANeighbour(inboundMessage.getAddress(), inboundMessage.getPort())) {
                 if (Integer.parseInt(messageSplitArray[4]) > 0) {
-                    forwardBootstrapPing(pingResponseMessage.getAddress(), pingResponseMessage.getPort(), Integer.parseInt(messageSplitArray[4]) - 1);
+                    forwardBootstrapJoin(inboundMessage.getAddress(), inboundMessage.getPort(), Integer.parseInt(messageSplitArray[4]) - 1);
                 }
             } else {
                 // check are we able to add a neighbour to the node
                 if (routingTable.getNeighboursCount() < maxNeighbours) {
                     // sending a join ok request
-                    String payload = String.format(joinOkFormat, this.routingTable.getAddress(), this.routingTable.getPort());
+                    String payload = String.format(joinOkFormat, this.routingTable.getNodeIp(), this.routingTable.getNodePort());
+                    //format 3digit string to 4digit
                     String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
-                    ChannelMessage outGoingMsg = new ChannelMessage(MessageType.PING,messageSplitArray[2], Integer.parseInt(messageSplitArray[3]), rawMessage);
+                    ChannelMessage outGoingMsg = new ChannelMessage(MessageType.JOINOK,messageSplitArray[2], Integer.parseInt(messageSplitArray[3]), rawMessage);
                     this.handleRequest(outGoingMsg);
                     log.info("sending a join ok request {}", payload);
                 } else {
                     //otherwise send it to the neighbours
                     if (Integer.parseInt(messageSplitArray[4]) > 0) {
-                        forwardBootstrapPing(pingResponseMessage.getAddress(), pingResponseMessage.getPort(), Integer.parseInt(messageSplitArray[4]) - 1);
+                        forwardBootstrapJoin(inboundMessage.getAddress(), inboundMessage.getPort(), Integer.parseInt(messageSplitArray[4]) - 1);
                     }
                 }
             }
@@ -114,11 +122,11 @@ public class HeartBeatHandlingStrategy implements MessageHandlingStrategy {
             // if node leaves
             this.routingTable.removeNeighbour(messageSplitArray[2], Integer.parseInt(messageSplitArray[3]));
             if (routingTable.getNeighboursCount() <= minNeighbours) {
-                sendBootstrapPing(messageSplitArray[2], Integer.parseInt(messageSplitArray[3]));
+                sendBootstrapJoin(messageSplitArray[2], Integer.parseInt(messageSplitArray[3]));
             }
         } else {
-            if (this.routingTable.addNeighbour(messageSplitArray[2], Integer.parseInt(messageSplitArray[3].trim()), pingResponseMessage.getPort(), maxNeighbours) != 0) {
-                String payload = String.format(pongFormat, this.routingTable.getAddress(), this.routingTable.getPort());
+            if (this.routingTable.addNeighbour(messageSplitArray[2], Integer.parseInt(messageSplitArray[3].trim()), maxNeighbours) != 0) {
+                String payload = String.format(pongFormat, this.routingTable.getNodeIp(), this.routingTable.getNodePort());
                 String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
                 ChannelMessage outGoingMsg = new ChannelMessage(MessageType.PING,messageSplitArray[2], Integer.parseInt(messageSplitArray[3].trim()), rawMessage);
                 this.handleRequest(outGoingMsg);
@@ -132,18 +140,18 @@ public class HeartBeatHandlingStrategy implements MessageHandlingStrategy {
         String[] messageSplit = pongResponseMessage.getMessage().split(" ");
         if (messageSplit[1].equals(CommandTypes.JOINOK.name())) {
             if (routingTable.getNeighboursCount() < maxNeighbours) {
-                this.routingTable.addNeighbour(messageSplit[2], Integer.parseInt(messageSplit[3].trim()), pongResponseMessage.getPort(), maxNeighbours);
+                this.routingTable.addNeighbour(messageSplit[2], Integer.parseInt(messageSplit[3].trim()), maxNeighbours);
             }
         } else {
             this.timeoutManager.removeMessage(String.format(pingMessageIdFormat, messageSplit[2], Integer.parseInt(messageSplit[3].trim())));
-            this.routingTable.addNeighbour(messageSplit[2], Integer.parseInt(messageSplit[3].trim()), pongResponseMessage.getPort(), maxNeighbours);
+            this.routingTable.addNeighbour(messageSplit[2], Integer.parseInt(messageSplit[3].trim()), maxNeighbours);
         }
     }
 
-    public void sendPing(String address, int port) {
-        String payload = String.format(pingFormat, this.routingTable.getAddress(), this.routingTable.getPort());
+    public void sendJoin(String address, int port) {
+        String payload = String.format(joinFormat, this.routingTable.getNodeIp(), this.routingTable.getNodePort());
         String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
-        ChannelMessage message = new ChannelMessage(MessageType.PING,address, port, rawMessage);
+        ChannelMessage message = new ChannelMessage(MessageType.JOIN,address, port, rawMessage);
         this.pingFailureCount.putIfAbsent(String.format(pingMessageIdFormat, address, port), 0);
         this.timeoutManager.registerMessage(
                 String.format(pingMessageIdFormat, address, port),
@@ -153,17 +161,17 @@ public class HeartBeatHandlingStrategy implements MessageHandlingStrategy {
     }
 
 
-    public void sendBootstrapPing(String address, int port) {
+    public void sendBootstrapJoin(String address, int port) {
         List<Neighbour> otherNeighbours = routingTable.getOtherNeighbours(address, port);
-        String payload = String.format(joinFormat, this.routingTable.getAddress(), this.routingTable.getPort(), joinHopLimit);
+        String payload = String.format(joinFormat, this.routingTable.getNodeIp(), this.routingTable.getNodePort(), joinHopLimit);
         String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
         otherNeighbours.forEach(neighbour -> {
-            ChannelMessage message = new ChannelMessage(MessageType.PING,neighbour.getAddress(), neighbour.getPort(), rawMessage);
+            ChannelMessage message = new ChannelMessage(MessageType.JOIN,neighbour.getAddress(), neighbour.getPort(), rawMessage);
             handleRequest(message);
         });
     }
 
-    private void forwardBootstrapPing(String address, Integer port, int hops) {
+    private void forwardBootstrapJoin(String address, Integer port, int hops) {
         List<Neighbour> otherNeighbours = routingTable.getOtherNeighbours(address, port);
         String payload = String.format(joinFormat, address, port, hops);
         String rawMessage = String.format(messageFormat, payload.length() + 5, payload);

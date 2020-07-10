@@ -58,7 +58,7 @@ public class MessageBrokerThread implements Runnable {
 
         this.address = address;
         this.port = port;
-        this.routingTable = new RoutingTable(address, port);
+        this.routingTable = new RoutingTable(address,port);
         this.channelIn = new LinkedBlockingQueue<>();
         this.channelOut = new LinkedBlockingQueue<>();
         this.heartBeatHandlingStrategy=heartBeatHandlingStrategy;
@@ -80,7 +80,6 @@ public class MessageBrokerThread implements Runnable {
         neighbourNodes.forEach(neighbourNode -> routingTable.addNeighbour(
                 neighbourNode.getAddress().getHostAddress(),
                 neighbourNode.getPort(),
-                port,
                 Integer.parseInt(Objects.requireNonNull(environment.getProperty("app.node.max-neighbours")))));
         log.info("adding initial nodes {}", routingTable.getNeighbours());
 
@@ -88,7 +87,7 @@ public class MessageBrokerThread implements Runnable {
         timeoutManager.registerMessage(rPingMessageId, pingInterval, new TimeOutCallback() {
             @Override
             public void onTimeout(String messageId) {
-                sendRoutinePing();
+                sendRoutineJoin();
             }
 
             @Override
@@ -98,9 +97,9 @@ public class MessageBrokerThread implements Runnable {
         });
     }
 
-    private void sendRoutinePing() {
+    private void sendRoutineJoin() {
         List<Neighbour> neighbours = routingTable.getNeighbours();
-        neighbours.forEach(neighbour -> this.heartBeatHandlingStrategy.sendPing(neighbour.getAddress(), neighbour.getPort()));
+        neighbours.forEach(neighbour -> this.heartBeatHandlingStrategy.sendJoin(neighbour.getAddress(), neighbour.getPort()));
     }
 
     @Override
@@ -116,8 +115,8 @@ public class MessageBrokerThread implements Runnable {
                 timeoutManager.checkForTimeout();
                 ChannelMessage message = channelIn.poll(100, TimeUnit.MILLISECONDS);
                 if (message != null) {
-                    // log.info("found the message {}", message.getMessage());
-                    MessageHandlingStrategy messageHandlingStrategy = messageHandelingFactory.getResponseHandler(message.getMessage().split(" ")[1], this);
+                    //extract necessary message handling strategy by giving correct message type
+                    MessageHandlingStrategy messageHandlingStrategy = messageHandelingFactory.getMessageHandlingStrategy(message.getType(), this);
                     if (messageHandlingStrategy != null) {
                         messageHandlingStrategy.handleResponse(message);
                     }

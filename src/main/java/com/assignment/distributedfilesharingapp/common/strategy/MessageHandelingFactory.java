@@ -2,8 +2,10 @@ package com.assignment.distributedfilesharingapp.common.strategy;
 
 import com.assignment.distributedfilesharingapp.common.MessageBrokerThread;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 @Slf4j
+@Component
 public class MessageHandelingFactory {
 
     private final HeartBeatHandlingStrategy heartBeatHandlingStrategy;
@@ -21,26 +23,27 @@ public class MessageHandelingFactory {
         this.queryMessageHandlingStrategy = queryMessageHandlingStrategy;
     }
 
-    public MessageHandlingStrategy getResponseHandler(String keyword, MessageBrokerThread messageBroker) {
-        switch (keyword) {
-            case "PING":
-            case "JOIN":
-
-            case "LEAVE":
+    public MessageHandlingStrategy getMessageHandlingStrategy(MessageType messageType, MessageBrokerThread messageBroker) {
+        switch (messageType) {
+            case PING:
+            case JOIN:
                 this.heartBeatHandlingStrategy.init(messageBroker.getRoutingTable(), messageBroker.getChannelOut(), messageBroker.getTimeoutManager());
                 return this.heartBeatHandlingStrategy;
-            case "PONG":
-            case "JOINOK":
+            case LEAVE:
                 this.heartBeatHandlingStrategy.init(messageBroker.getRoutingTable(), messageBroker.getChannelOut(), messageBroker.getTimeoutManager());
                 return this.heartBeatHandlingStrategy;
-            case "SER":
+            case PONG:
+            case JOINOK:
+                this.heartBeatHandlingStrategy.init(messageBroker.getRoutingTable(), messageBroker.getChannelOut(), messageBroker.getTimeoutManager());
+                return this.heartBeatHandlingStrategy;
+            case SER:
                 fileSearchMessageHandlingStrategy.init(messageBroker.getRoutingTable(), messageBroker.getChannelOut(), messageBroker.getTimeoutManager());
                 return fileSearchMessageHandlingStrategy;
-            case "SEROK":
+            case SEROK:
                 queryMessageHandlingStrategy.init(messageBroker.getRoutingTable(), messageBroker.getChannelOut(), messageBroker.getTimeoutManager());
                 return queryMessageHandlingStrategy;
             default:
-                log.info("Unknown keyword received in Response Handler : {}", keyword);
+                log.info("Unknown keyword received in Response Handler : {}", messageType);
                 return null;
         }
     }

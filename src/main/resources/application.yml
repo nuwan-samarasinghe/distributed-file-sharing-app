@@ -11,7 +11,7 @@ app:
     un-register-format: "UNREG %s %s %s"
     message-format: "%04d %s"
     leave-format: "LEAVE %s %s"
-    join-format: "JOIN %s %s %s"
+    join-format: "JOIN %s %s"
     joinok-format: "JOINOK %s %s"
     pong-format: "PONG %s %s"
     ping-message-id-format: "PINGID:%s:%s"
@@ -27,9 +27,9 @@ app:
   common:
     r-ping-message-id: "rPingMessage"
     file-name: "FileNames.txt"
-    enable-console: true
+    enable-console: false
 server:
-  port: 8080
+  port: 8081
   ssl:
     key-store-type: PKCS12
     key-store: "./src/main/resources/distributed-file-sharing-app.p12"

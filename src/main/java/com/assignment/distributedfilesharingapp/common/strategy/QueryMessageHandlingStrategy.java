@@ -71,9 +71,9 @@ public class QueryMessageHandlingStrategy  implements MessageHandlingStrategy{
     }
 
     public void doSearch(String fileName) {
-        String payload = String.format(queryFormat, this.routingTable.getAddress(), this.routingTable.getPort(), StringEncoderDecoder.encode(fileName), hopCount);
+        String payload = String.format(queryFormat, this.routingTable.getNodeIp(), this.routingTable.getNodePort(), StringEncoderDecoder.encode(fileName), hopCount);
         String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
-        ChannelMessage initialMessage = new ChannelMessage(MessageType.SEROK,this.routingTable.getAddress(), this.routingTable.getPort(), rawMessage);
+        ChannelMessage initialMessage = new ChannelMessage(MessageType.SEROK,this.routingTable.getNodeIp(), this.routingTable.getNodePort(), rawMessage);
         this.handleResponse(initialMessage);
     }
 }

@@ -51,6 +51,7 @@ public class AppConfig {
     public AppConfig(
             Node node,
             BootstrapServerService bootstrapServerService,
+            MessageHandelingFactory messageHandelingFactory,
             HeartBeatHandlingStrategy heartBeatHandlingStrategy,
             LeaveMessageHandlingStrategy leaveMessageHandlingStrategy,
             FileSearchMessageHandlingStrategy fileSearchMessageHandlingStrategy,
@@ -62,7 +63,7 @@ public class AppConfig {
         this.leaveMessageHandlingStrategy = leaveMessageHandlingStrategy;
         this.queryMessageHandlingStrategy = queryMessageHandlingStrategy;
         this.fileSearchMessageHandlingStrategy=fileSearchMessageHandlingStrategy;
-        messageHandelingFactory = new MessageHandelingFactory(heartBeatHandlingStrategy, fileSearchMessageHandlingStrategy, queryMessageHandlingStrategy);
+        this.messageHandelingFactory = messageHandelingFactory;
         this.environment = environment;
         this.nodeName = environment.getProperty("app.node.node-name");
         if (!Boolean.parseBoolean(this.environment.getProperty("app.common.enable-console"))) {
@@ -79,9 +80,8 @@ public class AppConfig {
             neighbourNodes = this.bootstrapServerService.register(node.getUserName(), node.getIpAddress(), node.getPort());
             this.username = node.getUserName();
         } catch (IOException e) {
-            log.error("An error occurred while registering the node in bootstrap server", e);
+            throw new IllegalStateException("An error occurred while registering the node in bootstrap server",e);
         }
-
         this.fileManager = FileManager.getInstance(this.username, this.environment.getProperty("app.common.file-name"));
         this.fileSearchMessageHandlingStrategy.setFileManager(fileManager);
 

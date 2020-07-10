@@ -44,7 +44,7 @@ public class LeaveMessageHandlingStrategy implements MessageHandlingStrategy {
     }
 
     public void sendLeave() {
-        String payload = String.format(leaveMessageFormat, this.routingTable.getAddress(), this.routingTable.getPort());
+        String payload = String.format(leaveMessageFormat, this.routingTable.getNodeIp(), this.routingTable.getNodePort());
         log.info("leave initiated with {}", payload);
         routingTable.getNeighbours()
                 .forEach(neighbour ->

@@ -120,7 +120,7 @@ public class ApplicationConsoleConfig {
                     // node.unRegister();
                     System.exit(0);
                 default:
-                    System.out.println("Please enter a valid option...");
+                    System.out.println("Please Enter a Valid Option...");
                     break;
             }
         }
