@@ -24,7 +24,7 @@ public class ApplicationConsoleConfig {
     private String nodeName;
     private final BootstrapServerService bootstrapServerService;
     private String username;
-    HeartBeatHandlingStrategy heartBeatHandlingStrategy;
+    private final HeartBeatHandlingStrategy heartBeatHandlingStrategy;
     private final LeaveMessageHandlingStrategy leaveMessageHandlingStrategy;
     private final MessageHandelingFactory messageHandelingFactory;
     private final FileSearchMessageHandlingStrategy fileSearchMessageHandlingStrategy;
@@ -50,6 +50,7 @@ public class ApplicationConsoleConfig {
         this.node = node;
         this.bootstrapServerService = bootstrapServerService;
         this.leaveMessageHandlingStrategy = leaveMessageHandlingStrategy;
+        this.heartBeatHandlingStrategy=heartBeatHandlingStrategy;
         this.fileSearchMessageHandlingStrategy = fileSearchMessageHandlingStrategy;
         this.queryMessageHandlingStrategy = queryMessageHandlingStrategy;
         messageHandelingFactory = new MessageHandelingFactory(heartBeatHandlingStrategy, fileSearchMessageHandlingStrategy, queryMessageHandlingStrategy);
