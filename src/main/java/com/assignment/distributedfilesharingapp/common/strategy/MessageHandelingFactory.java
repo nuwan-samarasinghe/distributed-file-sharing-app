@@ -25,14 +25,12 @@ public class MessageHandelingFactory {
 
     public MessageHandlingStrategy getMessageHandlingStrategy(MessageType messageType, MessageBrokerThread messageBroker) {
         switch (messageType) {
-            case PING:
             case JOIN:
                 this.heartBeatHandlingStrategy.init(messageBroker.getRoutingTable(), messageBroker.getChannelOut(), messageBroker.getTimeoutManager());
                 return this.heartBeatHandlingStrategy;
             case LEAVE:
                 this.heartBeatHandlingStrategy.init(messageBroker.getRoutingTable(), messageBroker.getChannelOut(), messageBroker.getTimeoutManager());
                 return this.heartBeatHandlingStrategy;
-            case PONG:
             case JOINOK:
                 this.heartBeatHandlingStrategy.init(messageBroker.getRoutingTable(), messageBroker.getChannelOut(), messageBroker.getTimeoutManager());
                 return this.heartBeatHandlingStrategy;

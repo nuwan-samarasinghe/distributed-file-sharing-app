@@ -6,19 +6,19 @@ import lombok.Data;
 public class Neighbour {
     private String address;
     private Integer port;
-    private Integer pingPongs;
+    private Integer tirpCount;
 
     public Neighbour() {
-        this.pingPongs = 0;
+        this.tirpCount = 0;
     }
 
     public Neighbour(String address, Integer port) {
         this.address = address;
         this.port = port;
-        this.pingPongs = 0;
+        this.tirpCount = 0;
     }
 
-    public void Ping() {
-        this.pingPongs++;
+    public void incrementTripCount() {
+        this.tirpCount++;
     }
 }

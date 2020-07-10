@@ -21,18 +21,23 @@ public class RoutingTable {
     private final List<Neighbour> neighbours = new CopyOnWriteArrayList<>();
 
     public Integer addNeighbour(String neighbourIpAddress, Integer neighbourPort, Integer maxNeighbours) {
+
+        //if new neighbour is already is in the list, then increment round-trip count and return neighbour size
         if (!neighbours.isEmpty()) {
             for (Neighbour neighbour : neighbours) {
                 if (neighbour.getAddress().equals(neighbourIpAddress) && neighbour.getPort().equals(neighbourPort)) {
-                    neighbour.Ping();
+                    neighbour.incrementTripCount();
                     return neighbours.size();
                 }
             }
         }
+        //in case of exceed maximum allowed neighbour count , return 0
         if (neighbours.size() >= maxNeighbours) {
             log.info("Cannot add neighbour : " + neighbourIpAddress + ":" + neighbourPort);
             return 0;
         }
+
+        //otherwise add new neighbour to the routing table
         synchronized (RoutingTable.class) {
             neighbours.add(new Neighbour(neighbourIpAddress, neighbourPort));
             log.info("Adding neighbour : " + neighbourIpAddress + ":" + neighbourPort);
@@ -61,7 +66,7 @@ public class RoutingTable {
         log.info("\n\n--------------------------------");
         log.info("Total neighbours: {}", neighbours.size());
         log.info("--------------------------------");
-        neighbours.forEach(neighbour -> log.info("Address: {} Port: {} Ping: {}", neighbour.getAddress(), neighbour.getPort(), neighbour.getPingPongs()));
+        neighbours.forEach(neighbour -> log.info("Address: {} Port: {} Ping: {}", neighbour.getAddress(), neighbour.getPort(), neighbour.getTirpCount()));
         log.info("--------------------------------\n\n");
     }
 

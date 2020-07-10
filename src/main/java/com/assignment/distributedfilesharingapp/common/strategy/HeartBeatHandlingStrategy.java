@@ -83,13 +83,13 @@ public class HeartBeatHandlingStrategy implements MessageHandlingStrategy {
         JOINOK - When this node want to connect other node and received success response
          */
         if(message.getType()==MessageType.JOIN){
-            handleIncommingMessage(message);
+            handleIncomingMessage(message);
+        }else {
+            handlePongResponse(message);
         }
-
-        handlePongResponse(message);
     }
 
-    synchronized void handleIncommingMessage(ChannelMessage inboundMessage){
+    synchronized void handleIncomingMessage(ChannelMessage inboundMessage){
 
         String[] messageSplitArray = inboundMessage.getMessage().split(" ");
         MessageType messageType=MessageType.valueOf(messageSplitArray[1]);
@@ -108,7 +108,7 @@ public class HeartBeatHandlingStrategy implements MessageHandlingStrategy {
                     String payload = String.format(joinOkFormat, this.routingTable.getNodeIp(), this.routingTable.getNodePort());
                     //format 3digit string to 4digit
                     String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
-                    ChannelMessage outGoingMsg = new ChannelMessage(MessageType.JOINOK,messageSplitArray[2], Integer.parseInt(messageSplitArray[3]), rawMessage);
+                    ChannelMessage outGoingMsg = new ChannelMessage(MessageType.JOINOK, messageSplitArray[ 2 ], Integer.parseInt(messageSplitArray[ 3 ]), rawMessage);
                     this.handleRequest(outGoingMsg);
                     log.info("sending a join ok request {}", payload);
                 } else {
@@ -138,7 +138,8 @@ public class HeartBeatHandlingStrategy implements MessageHandlingStrategy {
     synchronized void handlePongResponse(ChannelMessage pongResponseMessage){
         // log.info("receiving a pong request message:{} address:{} port:{}", message.getMessage(), message.getAddress(), message.getPort());
         String[] messageSplit = pongResponseMessage.getMessage().split(" ");
-        if (messageSplit[1].equals(CommandTypes.JOINOK.name())) {
+        MessageType messageType=MessageType.valueOf(messageSplit[1]);
+        if (messageType==MessageType.JOINOK) {
             if (routingTable.getNeighboursCount() < maxNeighbours) {
                 this.routingTable.addNeighbour(messageSplit[2], Integer.parseInt(messageSplit[3].trim()), maxNeighbours);
             }
