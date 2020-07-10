@@ -75,6 +75,7 @@ public class AppConfig {
         List<InetSocketAddress> neighbourNodes = new ArrayList<>();
         log.info("node created {}", node);
         try {
+            //register my PC with its IP and Port(random port)
             neighbourNodes = this.bootstrapServerService.register(node.getUserName(), node.getIpAddress(), node.getPort());
             this.username = node.getUserName();
         } catch (IOException e) {

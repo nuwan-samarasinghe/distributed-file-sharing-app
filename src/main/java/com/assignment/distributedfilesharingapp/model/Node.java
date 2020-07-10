@@ -27,16 +27,23 @@ public class Node {
             this.ipAddress = socket.getLocalAddress().getHostAddress();
             log.info("Current IP address of your PC is : {}", this.ipAddress);
         } catch (Exception e) {
-            log.error("Could not find your PC ip address", e);
+            log.error("CouYour PC IP Address Could Not Found");
+            throw new IllegalStateException("Your PC IP Address Could Not Found", e);
         }
 
         // generate port number
         try (ServerSocket socket = new ServerSocket(0)) {
+            /*
+            SO_REUSEADDR socket option allows a socket to forcibly bind to a port in use by another socket. ...
+             If two sockets are bound to the same interface and port and are members of the same multicast group,
+             data will be delivered to both sockets, rather than an arbitrarily chosen one.
+             */
             socket.setReuseAddress(true);
             this.port = socket.getLocalPort();
-            log.info("generated node port is : {}", this.port);
+            log.info("generated node port for current node is : {}", this.port);
         } catch (IOException e) {
-            log.error("Getting free port failed", e);
+            log.error("Port generation failed for given PC");
+            throw new IllegalStateException("Port generation failed for given PC", e);
         }
     }
 
