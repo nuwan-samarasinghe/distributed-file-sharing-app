@@ -1,4 +1,4 @@
-package com.assignment.distributedfilesharingapp.common.handlers;
+package com.assignment.distributedfilesharingapp.common.strategy;
 
 import com.assignment.distributedfilesharingapp.common.FileManager;
 import com.assignment.distributedfilesharingapp.common.StringEncoderDecoder;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class SearchRequestHandler implements AbstractResponseHandler, AbstractRequestHandler {
+public class FileSearchMessageHandlingStrategy implements MessageHandlingStrategy {
 
     private RoutingTable routingTable;
     private BlockingQueue<ChannelMessage> channelOut;
@@ -45,12 +45,19 @@ public class SearchRequestHandler implements AbstractResponseHandler, AbstractRe
         String payload = String.format(queryFormat, this.routingTable.getAddress(), this.routingTable.getPort(), StringEncoderDecoder.encode(keyword), hopCount);
         log.info("search for the given key word : {}", payload);
         String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
-        ChannelMessage initialMessage = new ChannelMessage(this.routingTable.getAddress(), this.routingTable.getPort(), rawMessage);
+        ChannelMessage initialMessage = new ChannelMessage(MessageType.SER,this.routingTable.getAddress(), this.routingTable.getPort(), rawMessage);
         this.handleResponse(initialMessage);
     }
 
     @Override
-    public void sendRequest(ChannelMessage message) {
+    public void init(RoutingTable routingTable, BlockingQueue<ChannelMessage> channelMessageBlockingQueue, TimeOutManager timeoutManager) {
+        this.routingTable = routingTable;
+        this.channelOut = channelMessageBlockingQueue;
+        this.timeoutManager = timeoutManager;
+    }
+
+    @Override
+    public void handleRequest(ChannelMessage message) {
         try {
             // log.info("adding message to blocking queue with address {} port {} and the message {}", message.getAddress(), message.getPort(), message.getMessage());
             channelOut.put(message);
@@ -77,8 +84,8 @@ public class SearchRequestHandler implements AbstractResponseHandler, AbstractRe
             String payload = String.format(queryHitFormat, resultSet.size(), routingTable.getAddress(), routingTable.getPort(), hopCount - hops, fileNamesString);
             log.info("requesting the file {}", payload);
             String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
-            ChannelMessage queryHitMessage = new ChannelMessage(address, port, rawMessage);
-            this.sendRequest(queryHitMessage);
+            ChannelMessage queryHitMessage = new ChannelMessage(MessageType.SER,address, port, rawMessage);
+            this.handleRequest(queryHitMessage);
         }
         //if the hop count is greater than zero send the message to all neighbours again
         if (hops > 0) {
@@ -91,16 +98,9 @@ public class SearchRequestHandler implements AbstractResponseHandler, AbstractRe
                         String payload = String.format(queryFormat, address, port, StringEncoderDecoder.encode(fileName), hops - 1);
                         log.info("send request to neighbours {}", payload);
                         String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
-                        ChannelMessage queryMessage = new ChannelMessage(neighbour.getAddress(), neighbour.getPort(), rawMessage);
-                        this.sendRequest(queryMessage);
+                        ChannelMessage queryMessage = new ChannelMessage(MessageType.SER,neighbour.getAddress(), neighbour.getPort(), rawMessage);
+                        this.handleRequest(queryMessage);
                     });
         }
-    }
-
-    @Override
-    public void init(RoutingTable routingTable, BlockingQueue<ChannelMessage> channelMessageBlockingQueue, TimeOutManager timeoutManager) {
-        this.routingTable = routingTable;
-        this.channelOut = channelMessageBlockingQueue;
-        this.timeoutManager = timeoutManager;
     }
 }

@@ -2,7 +2,7 @@ package com.assignment.distributedfilesharingapp.config;
 
 import com.assignment.distributedfilesharingapp.common.FileManager;
 import com.assignment.distributedfilesharingapp.common.MessageBrokerThread;
-import com.assignment.distributedfilesharingapp.common.handlers.*;
+import com.assignment.distributedfilesharingapp.common.strategy.*;
 import com.assignment.distributedfilesharingapp.model.Node;
 import com.assignment.distributedfilesharingapp.model.SearchResult;
 import com.assignment.distributedfilesharingapp.service.BootstrapServerService;
@@ -24,11 +24,11 @@ public class ApplicationConsoleConfig {
     private String nodeName;
     private final BootstrapServerService bootstrapServerService;
     private String username;
-    private final PingRequestHandler pingRequestHandler;
-    private final LeaveRequestHandler leaveRequestHandler;
-    private final ResponseHandlerFactory responseHandlerFactory;
-    private final SearchRequestHandler searchRequestHandler;
-    private final QueryRequestHandler queryRequestHandler;
+    HeartBeatHandlingStrategy heartBeatHandlingStrategy;
+    private final LeaveMessageHandlingStrategy leaveMessageHandlingStrategy;
+    private final MessageHandelingFactory messageHandelingFactory;
+    private final FileSearchMessageHandlingStrategy fileSearchMessageHandlingStrategy;
+    private final QueryMessageHandlingStrategy queryMessageHandlingStrategy;
     private final Environment environment;
     private final FileService fileService;
     @Getter
@@ -41,20 +41,18 @@ public class ApplicationConsoleConfig {
     public ApplicationConsoleConfig(
             Node node,
             BootstrapServerService bootstrapServerService,
-            PingRequestHandler pingRequestHandler,
-            LeaveRequestHandler leaveRequestHandler,
-            PongRequestHandler pongRequestHandler,
-            SearchRequestHandler searchRequestHandler,
-            QueryRequestHandler queryRequestHandler,
+            HeartBeatHandlingStrategy heartBeatHandlingStrategy,
+            LeaveMessageHandlingStrategy leaveMessageHandlingStrategy,
+            FileSearchMessageHandlingStrategy fileSearchMessageHandlingStrategy,
+            QueryMessageHandlingStrategy queryMessageHandlingStrategy,
             FileService fileService,
             Environment environment) throws Exception {
         this.node = node;
         this.bootstrapServerService = bootstrapServerService;
-        this.pingRequestHandler = pingRequestHandler;
-        this.leaveRequestHandler = leaveRequestHandler;
-        this.searchRequestHandler = searchRequestHandler;
-        this.queryRequestHandler = queryRequestHandler;
-        responseHandlerFactory = new ResponseHandlerFactory(pingRequestHandler, pongRequestHandler, searchRequestHandler, queryRequestHandler);
+        this.leaveMessageHandlingStrategy = leaveMessageHandlingStrategy;
+        this.fileSearchMessageHandlingStrategy = fileSearchMessageHandlingStrategy;
+        this.queryMessageHandlingStrategy = queryMessageHandlingStrategy;
+        messageHandelingFactory = new MessageHandelingFactory(heartBeatHandlingStrategy, fileSearchMessageHandlingStrategy, queryMessageHandlingStrategy);
         this.environment = environment;
         this.nodeName = environment.getProperty("app.node.node-name");
         this.fileService = fileService;
@@ -129,8 +127,8 @@ public class ApplicationConsoleConfig {
 
     public Map<String, SearchResult> doSearch(String fileName) {
         Map<String, SearchResult> searchResults = new LinkedHashMap<>();
-        this.queryRequestHandler.setSearchResults(searchResults);
-        this.queryRequestHandler.setSearchInitiatedTime(System.currentTimeMillis());
+        this.queryMessageHandlingStrategy.setSearchResults(searchResults);
+        this.queryMessageHandlingStrategy.setSearchInitiatedTime(System.currentTimeMillis());
         this.messageBrokerThread.doSearch(fileName);
         log.info("Please be patient till the file results are returned ...");
         try {
@@ -153,18 +151,18 @@ public class ApplicationConsoleConfig {
             log.error("An error occurred while registering the node in bootstrap server", e);
         }
         this.fileManager = FileManager.getInstance(this.username, this.environment.getProperty("app.common.file-name"));
-        this.searchRequestHandler.setFileManager(fileManager);
+        this.fileSearchMessageHandlingStrategy.setFileManager(fileManager);
         this.messageBrokerThread = new MessageBrokerThread(
                 node.getIpAddress(),
                 node.getPort(),
-                pingRequestHandler,
-                leaveRequestHandler,
+                heartBeatHandlingStrategy,
+                leaveMessageHandlingStrategy,
                 fileManager,
                 this.environment.getProperty("app.common.r-ping-message-id"),
                 Integer.parseInt(Objects.requireNonNull(this.environment.getProperty("app.bootstrap-server.ping-interval"))),
-                responseHandlerFactory,
-                this.queryRequestHandler,
-                this.searchRequestHandler,
+                messageHandelingFactory,
+                this.queryMessageHandlingStrategy,
+                this.fileSearchMessageHandlingStrategy,
                 this.environment,
                 neighbourNodes
         );

@@ -1,6 +1,7 @@
 package com.assignment.distributedfilesharingapp.common;
 
-import com.assignment.distributedfilesharingapp.common.handlers.PingRequestHandler;
+import com.assignment.distributedfilesharingapp.common.strategy.HeartBeatHandlingStrategy;
+import com.assignment.distributedfilesharingapp.common.strategy.PingRequestHandler;
 import com.assignment.distributedfilesharingapp.model.RoutingTable;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,19 +14,19 @@ public class PingTimeoutCallback implements TimeOutCallback {
     private final RoutingTable routingTable;
     private final Integer pingRetry;
     private final Integer minNeighbours;
-    private final PingRequestHandler pingRequestHandler;
+    private final HeartBeatHandlingStrategy heartBeatHandlingStrategy;
 
     public PingTimeoutCallback(
             Map<String, Integer> pingFailureCount,
             RoutingTable routingTable,
             Integer pingRetry,
             Integer minNeighbours,
-            PingRequestHandler pingRequestHandler) {
+            HeartBeatHandlingStrategy heartBeatHandlingStrategy) {
         this.pingFailureCount = pingFailureCount;
         this.routingTable = routingTable;
         this.pingRetry = pingRetry;
         this.minNeighbours = minNeighbours;
-        this.pingRequestHandler = pingRequestHandler;
+        this.heartBeatHandlingStrategy = heartBeatHandlingStrategy;
     }
 
     @Override
@@ -36,7 +37,7 @@ public class PingTimeoutCallback implements TimeOutCallback {
             routingTable.removeNeighbour(messageId.split(":")[1], Integer.valueOf(messageId.split(":")[2]));
         }
         if (routingTable.getNeighboursCount() < minNeighbours) {
-            pingRequestHandler.sendBootstrapPing(messageId.split(":")[1], Integer.parseInt(messageId.split(":")[2]));
+            heartBeatHandlingStrategy.sendBootstrapPing(messageId.split(":")[1], Integer.parseInt(messageId.split(":")[2]));
         }
     }
 

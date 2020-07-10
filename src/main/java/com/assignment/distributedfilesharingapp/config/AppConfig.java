@@ -2,15 +2,12 @@ package com.assignment.distributedfilesharingapp.config;
 
 import com.assignment.distributedfilesharingapp.common.FileManager;
 import com.assignment.distributedfilesharingapp.common.MessageBrokerThread;
-import com.assignment.distributedfilesharingapp.common.handlers.*;
+import com.assignment.distributedfilesharingapp.common.strategy.*;
 import com.assignment.distributedfilesharingapp.model.Node;
 import com.assignment.distributedfilesharingapp.model.SearchResult;
 import com.assignment.distributedfilesharingapp.service.BootstrapServerService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +15,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
 
 @Slf4j
 @Component
@@ -30,15 +26,16 @@ public class AppConfig {
 
     private String username;
 
-    private final PingRequestHandler pingRequestHandler;
+    private final HeartBeatHandlingStrategy heartBeatHandlingStrategy;
 
-    private final LeaveRequestHandler leaveRequestHandler;
+    private final LeaveMessageHandlingStrategy leaveMessageHandlingStrategy;
 
-    private final ResponseHandlerFactory responseHandlerFactory;
+    private final MessageHandelingFactory messageHandelingFactory;
 
-    private final SearchRequestHandler searchRequestHandler;
+    private final FileSearchMessageHandlingStrategy fileSearchMessageHandlingStrategy;
 
-    private final QueryRequestHandler queryRequestHandler;
+    private final QueryMessageHandlingStrategy queryMessageHandlingStrategy;
+
 
     private final Environment environment;
 
@@ -54,19 +51,18 @@ public class AppConfig {
     public AppConfig(
             Node node,
             BootstrapServerService bootstrapServerService,
-            PingRequestHandler pingRequestHandler,
-            LeaveRequestHandler leaveRequestHandler,
-            PongRequestHandler pongRequestHandler,
-            SearchRequestHandler searchRequestHandler,
-            QueryRequestHandler queryRequestHandler,
+            HeartBeatHandlingStrategy heartBeatHandlingStrategy,
+            LeaveMessageHandlingStrategy leaveMessageHandlingStrategy,
+            FileSearchMessageHandlingStrategy fileSearchMessageHandlingStrategy,
+                    QueryMessageHandlingStrategy queryMessageHandlingStrategy,
             Environment environment) throws SocketException {
         this.node = node;
         this.bootstrapServerService = bootstrapServerService;
-        this.pingRequestHandler = pingRequestHandler;
-        this.leaveRequestHandler = leaveRequestHandler;
-        this.searchRequestHandler = searchRequestHandler;
-        this.queryRequestHandler = queryRequestHandler;
-        responseHandlerFactory = new ResponseHandlerFactory(pingRequestHandler, pongRequestHandler, searchRequestHandler, queryRequestHandler);
+        this.heartBeatHandlingStrategy=heartBeatHandlingStrategy;
+        this.leaveMessageHandlingStrategy = leaveMessageHandlingStrategy;
+        this.queryMessageHandlingStrategy = queryMessageHandlingStrategy;
+        this.fileSearchMessageHandlingStrategy=fileSearchMessageHandlingStrategy;
+        messageHandelingFactory = new MessageHandelingFactory(heartBeatHandlingStrategy, fileSearchMessageHandlingStrategy, queryMessageHandlingStrategy);
         this.environment = environment;
         this.nodeName = environment.getProperty("app.node.node-name");
         if (!Boolean.parseBoolean(this.environment.getProperty("app.common.enable-console"))) {
@@ -86,19 +82,19 @@ public class AppConfig {
         }
 
         this.fileManager = FileManager.getInstance(this.username, this.environment.getProperty("app.common.file-name"));
-        this.searchRequestHandler.setFileManager(fileManager);
+        this.fileSearchMessageHandlingStrategy.setFileManager(fileManager);
 
         this.messageBrokerThread = new MessageBrokerThread(
                 node.getIpAddress(),
                 node.getPort(),
-                pingRequestHandler,
-                leaveRequestHandler,
+                heartBeatHandlingStrategy,
+                leaveMessageHandlingStrategy,
                 fileManager,
                 this.environment.getProperty("app.common.r-ping-message-id"),
                 Integer.parseInt(Objects.requireNonNull(this.environment.getProperty("app.bootstrap-server.ping-interval"))),
-                responseHandlerFactory,
-                this.queryRequestHandler,
-                this.searchRequestHandler,
+                messageHandelingFactory,
+                this.queryMessageHandlingStrategy,
+                this.fileSearchMessageHandlingStrategy,
                 this.environment,
                 neighbourNodes
         );
@@ -108,7 +104,7 @@ public class AppConfig {
     public void unregisterNode() {
         try {
             this.bootstrapServerService.unRegister(this.node.getUserName(), this.node.getIpAddress(), this.node.getPort());
-            this.messageBrokerThread.getLeaveRequestHandler().sendLeave();
+            this.messageBrokerThread.getLeaveMessageHandlingStrategy().sendLeave();
         } catch (IOException e) {
             log.info("Un-Registering node failed", e);
         }
@@ -120,8 +116,8 @@ public class AppConfig {
 
     public Map<String, SearchResult> doSearch(String fileName) {
         Map<String, SearchResult> searchResults = new HashMap<>();
-        this.queryRequestHandler.setSearchResults(searchResults);
-        this.queryRequestHandler.setSearchInitiatedTime(System.currentTimeMillis());
+        this.queryMessageHandlingStrategy.setSearchResults(searchResults);
+        this.queryMessageHandlingStrategy.setSearchInitiatedTime(System.currentTimeMillis());
         this.messageBrokerThread.doSearch(fileName);
         log.info("Please be patient till the file results are returned ...");
         try {

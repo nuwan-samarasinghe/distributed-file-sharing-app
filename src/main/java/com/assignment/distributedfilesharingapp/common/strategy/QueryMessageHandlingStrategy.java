@@ -1,4 +1,4 @@
-package com.assignment.distributedfilesharingapp.common.handlers;
+package com.assignment.distributedfilesharingapp.common.strategy;
 
 import com.assignment.distributedfilesharingapp.common.StringEncoderDecoder;
 import com.assignment.distributedfilesharingapp.common.TimeOutManager;
@@ -15,7 +15,7 @@ import java.util.concurrent.BlockingQueue;
 
 @Slf4j
 @Component
-public class QueryRequestHandler implements AbstractResponseHandler {
+public class QueryMessageHandlingStrategy  implements MessageHandlingStrategy{
 
     @Value("${app.commands.query-format}")
     private String queryFormat;
@@ -35,6 +35,18 @@ public class QueryRequestHandler implements AbstractResponseHandler {
 
     @Setter
     private Long searchInitiatedTime;
+
+    @Override
+    public void init(RoutingTable routingTable, BlockingQueue<ChannelMessage> channelMessageBlockingQueue, TimeOutManager timeoutManager) {
+        this.routingTable = routingTable;
+        this.channelOut = channelMessageBlockingQueue;
+        this.timeoutManager = timeoutManager;
+    }
+
+    @Override
+    public void handleRequest(ChannelMessage message) {
+
+    }
 
     @Override
     public void handleResponse(ChannelMessage message) {
@@ -58,17 +70,10 @@ public class QueryRequestHandler implements AbstractResponseHandler {
 
     }
 
-    @Override
-    public void init(RoutingTable routingTable, BlockingQueue<ChannelMessage> channelMessageBlockingQueue, TimeOutManager timeoutManager) {
-        this.routingTable = routingTable;
-        this.channelOut = channelMessageBlockingQueue;
-        this.timeoutManager = timeoutManager;
-    }
-
     public void doSearch(String fileName) {
         String payload = String.format(queryFormat, this.routingTable.getAddress(), this.routingTable.getPort(), StringEncoderDecoder.encode(fileName), hopCount);
         String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
-        ChannelMessage initialMessage = new ChannelMessage(this.routingTable.getAddress(), this.routingTable.getPort(), rawMessage);
+        ChannelMessage initialMessage = new ChannelMessage(MessageType.SEROK,this.routingTable.getAddress(), this.routingTable.getPort(), rawMessage);
         this.handleResponse(initialMessage);
     }
 }

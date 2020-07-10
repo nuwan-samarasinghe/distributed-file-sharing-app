@@ -1,10 +1,9 @@
 package com.assignment.distributedfilesharingapp.common;
 
-import com.assignment.distributedfilesharingapp.common.handlers.*;
+import com.assignment.distributedfilesharingapp.common.strategy.*;
 import com.assignment.distributedfilesharingapp.model.ChannelMessage;
 import com.assignment.distributedfilesharingapp.model.Neighbour;
 import com.assignment.distributedfilesharingapp.model.RoutingTable;
-import com.assignment.distributedfilesharingapp.service.BootstrapServerService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
@@ -25,32 +24,35 @@ public class MessageBrokerThread implements Runnable {
     private final Integer port;
     @Getter
     private final RoutingTable routingTable;
-    private final PingRequestHandler pingRequestHandler;
+    private final HeartBeatHandlingStrategy heartBeatHandlingStrategy;
+//    @Getter
+//    private final LeaveRequestHandler leaveRequestHandler;
     @Getter
-    private final LeaveRequestHandler leaveRequestHandler;
+    private final LeaveMessageHandlingStrategy leaveMessageHandlingStrategy;
     private final BlockingQueue<ChannelMessage> channelIn;
     @Getter
     private final LinkedBlockingQueue<ChannelMessage> channelOut;
     @Getter
     private final TimeOutManager timeoutManager;
     private final FileManager fileManager;
-    private final ResponseHandlerFactory responseHandlerFactory;
+    private final MessageHandelingFactory messageHandelingFactory;
     private final MessageReceiver server;
     private final MessageSender client;
-    private final QueryRequestHandler queryRequestHandler;
-    private final SearchRequestHandler searchRequestHandler;
+//    private final QueryRequestHandler queryRequestHandler;
+    private final QueryMessageHandlingStrategy queryMessageHandlingStrategy;
+    private final FileSearchMessageHandlingStrategy fileSearchMessageHandlingStrategy;
 
     public MessageBrokerThread(
             String address,
             Integer port,
-            PingRequestHandler pingRequestHandler,
-            LeaveRequestHandler leaveRequestHandler,
+            HeartBeatHandlingStrategy heartBeatHandlingStrategy,
+            LeaveMessageHandlingStrategy leaveMessageHandlingStrategy,
             FileManager fileManager,
             String rPingMessageId,
             Integer pingInterval,
-            ResponseHandlerFactory responseHandlerFactory,
-            QueryRequestHandler queryRequestHandler,
-            SearchRequestHandler searchRequestHandler,
+            MessageHandelingFactory messageHandelingFactory,
+            QueryMessageHandlingStrategy queryMessageHandlingStrategy,
+            FileSearchMessageHandlingStrategy fileSearchMessageHandlingStrategy,
             Environment environment,
             List<InetSocketAddress> neighbourNodes) throws SocketException {
 
@@ -59,17 +61,17 @@ public class MessageBrokerThread implements Runnable {
         this.routingTable = new RoutingTable(address, port);
         this.channelIn = new LinkedBlockingQueue<>();
         this.channelOut = new LinkedBlockingQueue<>();
-        this.pingRequestHandler = pingRequestHandler;
-        this.leaveRequestHandler = leaveRequestHandler;
+        this.heartBeatHandlingStrategy=heartBeatHandlingStrategy;
+        this.leaveMessageHandlingStrategy = leaveMessageHandlingStrategy;
         this.fileManager = fileManager;
         timeoutManager = new TimeOutManager(environment);
-        this.queryRequestHandler = queryRequestHandler;
-        this.searchRequestHandler = searchRequestHandler;
-        this.pingRequestHandler.init(routingTable, channelOut, timeoutManager);
-        this.leaveRequestHandler.init(routingTable, channelOut, timeoutManager);
-        this.queryRequestHandler.init(routingTable, channelOut, timeoutManager);
-        this.searchRequestHandler.init(routingTable, channelOut, timeoutManager);
-        this.responseHandlerFactory = responseHandlerFactory;
+        this.queryMessageHandlingStrategy = queryMessageHandlingStrategy;
+        this.fileSearchMessageHandlingStrategy = fileSearchMessageHandlingStrategy;
+        this.heartBeatHandlingStrategy.init(routingTable, channelOut, timeoutManager);
+        this.leaveMessageHandlingStrategy.init(routingTable, channelOut, timeoutManager);
+        this.queryMessageHandlingStrategy.init(routingTable, channelOut, timeoutManager);
+        this.fileSearchMessageHandlingStrategy.init(routingTable, channelOut, timeoutManager);
+        this.messageHandelingFactory = messageHandelingFactory;
 
         DatagramSocket socket = new DatagramSocket(this.port);
         this.server = new MessageReceiver(channelIn, socket);
@@ -98,7 +100,7 @@ public class MessageBrokerThread implements Runnable {
 
     private void sendRoutinePing() {
         List<Neighbour> neighbours = routingTable.getNeighbours();
-        neighbours.forEach(neighbour -> this.pingRequestHandler.sendPing(neighbour.getAddress(), neighbour.getPort()));
+        neighbours.forEach(neighbour -> this.heartBeatHandlingStrategy.sendPing(neighbour.getAddress(), neighbour.getPort()));
     }
 
     @Override
@@ -115,9 +117,9 @@ public class MessageBrokerThread implements Runnable {
                 ChannelMessage message = channelIn.poll(100, TimeUnit.MILLISECONDS);
                 if (message != null) {
                     // log.info("found the message {}", message.getMessage());
-                    AbstractResponseHandler abstractResponseHandler = responseHandlerFactory.getResponseHandler(message.getMessage().split(" ")[1], this);
-                    if (abstractResponseHandler != null) {
-                        abstractResponseHandler.handleResponse(message);
+                    MessageHandlingStrategy messageHandlingStrategy = messageHandelingFactory.getResponseHandler(message.getMessage().split(" ")[1], this);
+                    if (messageHandlingStrategy != null) {
+                        messageHandlingStrategy.handleResponse(message);
                     }
                 }
             } catch (InterruptedException e) {
@@ -127,6 +129,6 @@ public class MessageBrokerThread implements Runnable {
     }
 
     public void doSearch(String fileName) {
-        this.searchRequestHandler.doSearch(fileName);
+        this.fileSearchMessageHandlingStrategy.doSearch(fileName);
     }
 }
