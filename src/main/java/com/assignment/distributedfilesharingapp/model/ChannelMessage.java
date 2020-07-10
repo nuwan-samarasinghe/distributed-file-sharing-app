@@ -1,6 +1,5 @@
 package com.assignment.distributedfilesharingapp.model;
 
-import com.assignment.distributedfilesharingapp.common.strategy.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

@@ -2,6 +2,7 @@ package com.assignment.distributedfilesharingapp.common.strategy;
 
 import com.assignment.distributedfilesharingapp.common.TimeOutManager;
 import com.assignment.distributedfilesharingapp.model.ChannelMessage;
+import com.assignment.distributedfilesharingapp.model.MessageType;
 import com.assignment.distributedfilesharingapp.model.RoutingTable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +49,7 @@ public class LeaveMessageHandlingStrategy implements MessageHandlingStrategy {
         log.info("leave initiated with {}", payload);
         routingTable.getNeighbours()
                 .forEach(neighbour ->
-                        handleRequest(new ChannelMessage(MessageType.LEAVE,neighbour.getAddress(), neighbour.getPort(),
+                        handleRequest(new ChannelMessage(MessageType.LEAVE, neighbour.getAddress(), neighbour.getPort(),
                                 String.format(messageFormat, payload.length() + 5, payload))));
 
     }

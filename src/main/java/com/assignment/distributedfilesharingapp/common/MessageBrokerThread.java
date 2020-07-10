@@ -25,8 +25,6 @@ public class MessageBrokerThread implements Runnable {
     @Getter
     private final RoutingTable routingTable;
     private final HeartBeatHandlingStrategy heartBeatHandlingStrategy;
-//    @Getter
-//    private final LeaveRequestHandler leaveRequestHandler;
     @Getter
     private final LeaveMessageHandlingStrategy leaveMessageHandlingStrategy;
     private final BlockingQueue<ChannelMessage> channelIn;
@@ -38,7 +36,6 @@ public class MessageBrokerThread implements Runnable {
     private final MessageHandelingFactory messageHandelingFactory;
     private final MessageReceiver server;
     private final MessageSender client;
-//    private final QueryRequestHandler queryRequestHandler;
     private final QueryMessageHandlingStrategy queryMessageHandlingStrategy;
     private final FileSearchMessageHandlingStrategy fileSearchMessageHandlingStrategy;
 

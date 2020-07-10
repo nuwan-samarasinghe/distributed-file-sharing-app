@@ -1,12 +1,13 @@
-package com.assignment.distributedfilesharingapp.common.strategy;
+package com.assignment.distributedfilesharingapp.model;
 
 
 
 public enum MessageType {
     JOIN("JOIN"),
     JOINOK("JOINOK"),
-    PING("PING"),
-    PONG("PONG"),
+    REG("REG"),
+    REGOK("REGOK"),
+    UNROK("UNROK"),
     SER("SER"),
     SEROK("SEROK"),
     LEAVE("LEAVE");

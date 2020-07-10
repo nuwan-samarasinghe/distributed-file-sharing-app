@@ -2,7 +2,7 @@ package com.assignment.distributedfilesharingapp.service;
 
 import com.assignment.distributedfilesharingapp.common.IpPortConverter;
 import com.assignment.distributedfilesharingapp.exception.FileSharingException;
-import com.assignment.distributedfilesharingapp.model.CommandTypes;
+import com.assignment.distributedfilesharingapp.model.MessageType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -72,8 +72,8 @@ public class BootstrapServerService {
 
     private boolean processBootstrapServerUnregisterResponse(String response) {
         String[] strings = response.split(" ");
-        if (!response.contains(CommandTypes.REGOK.name())) {
-            throw new FileSharingException(CommandTypes.UNROK + " not received");
+        if (!response.contains(MessageType.REGOK.name())) {
+            throw new FileSharingException(MessageType.UNROK + " not received");
         }
         if (Objects.equals(strings[2], "0")) {
             log.info("Successfully unregistered");
@@ -88,9 +88,9 @@ public class BootstrapServerService {
 
     private List<InetSocketAddress> processBootstrapRegisterResponse(String sendOrReceive) {
 
-        if (!sendOrReceive.contains(CommandTypes.REGOK.name())) {
-            log.error(" {} not received", CommandTypes.REGOK.name());
-            throw new FileSharingException(CommandTypes.REGOK.name() + " not received");
+        if (!sendOrReceive.contains(MessageType.REGOK.name())) {
+            log.error(" {} not received", MessageType.REGOK.name());
+            throw new FileSharingException(MessageType.REGOK.name() + " not received");
         }
         String[] splitResponse = sendOrReceive.split(" ");
         List<InetSocketAddress> neighbourNodes = ipPortConverter.getStringToIPPortConverter().apply(splitResponse);

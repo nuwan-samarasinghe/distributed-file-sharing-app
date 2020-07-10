@@ -1,7 +1,7 @@
 package com.assignment.distributedfilesharingapp.common;
 
 
-import com.assignment.distributedfilesharingapp.common.strategy.MessageType;
+import com.assignment.distributedfilesharingapp.model.MessageType;
 import com.assignment.distributedfilesharingapp.model.ChannelMessage;
 import lombok.extern.slf4j.Slf4j;
 

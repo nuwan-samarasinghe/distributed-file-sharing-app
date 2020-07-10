@@ -1,6 +1,7 @@
 package com.assignment.distributedfilesharingapp.common.strategy;
 
 import com.assignment.distributedfilesharingapp.common.MessageBrokerThread;
+import com.assignment.distributedfilesharingapp.model.MessageType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +42,7 @@ public class MessageHandelingFactory {
                 queryMessageHandlingStrategy.init(messageBroker.getRoutingTable(), messageBroker.getChannelOut(), messageBroker.getTimeoutManager());
                 return queryMessageHandlingStrategy;
             default:
-                log.info("Unknown keyword received in Response Handler : {}", messageType);
+                log.info("Factory received unknown messageType : {}", messageType);
                 return null;
         }
     }
