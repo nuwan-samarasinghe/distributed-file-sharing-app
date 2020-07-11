@@ -69,21 +69,28 @@ it will download the file to the server
 #### Question 01
 How would you measure the performance of the system? 
 ##### Answer:
- 
+ * Measure the time to search a random file while increasing number of nodes in the system.
+ * Generate dummy concurrent requests using JMeeter to download/search particular file and 
+  measure the CPU and memory usage of a single node.In this way we could test the load and stress of the system.
 #### Question 02
 You have mentioned that the search request will be a recursive call. If so, will it be a blocking call? 
 Will a particular node block, waiting for the response to arrive from the downstream nodes, unable to respond to other requests coming its way?
 What is the technology stack you plan to use?
 ##### Answer:
+* We have decoupled the message sender and receiver using blocking queues.
+One queue for outgoing messages and other queue for incoming requests.
+So the outgoing and incoming request will process independently from each other.
 
+* Further it uses timeout time for each and every request.
+So it won't badly hanging on to a single message process. 
 #### Question 03
 What is the technology stack you plan to use?
 ##### Answer:
-We have desided to use spring framework(spring code and web).We have got that decision to simplify development
-and user spring inbuit crosscutting concerns.The other major reson is to use reactive file downloading with springs newest reactive
-technology stack in later of the development(if we decided to move to global production level). 
-
-
-
-
+* Socket Programming
+* Multi-threading Techniques
+* RESTful webservices
+* Queue Technologies
+* Network Communication Mechanisms
+* Angular Framework
+* Sprig Framework
 
