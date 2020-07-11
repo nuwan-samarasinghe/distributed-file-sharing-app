@@ -64,8 +64,18 @@ Then from the response list select the option number `<(Number key then Enter)>`
 it will download the file to the server
 
 
+### Questions and Answers
 
+#### Question 01
+ How would you measure the performance of the system? 
+ 
+#### Question 02
+You have mentioned that the search request will be a recursive call. If so, will it be a blocking call? 
+Will a particular node block, waiting for the response to arrive from the downstream nodes, unable to respond to other requests coming its way?
+What is the technology stack you plan to use?
 
+#### Question 03
+What is the technology stack you plan to use?
 
 
 
