@@ -20,7 +20,7 @@
 
 #### Swagger method
 
-in browser type following link : ```https://localhost:8081/swagger-ui.html```
+Go to following link in your browser: ```https://localhost:8081/swagger-ui.html```
 (change the port according to the ```server.port: 8081```)
 
 ![Image of Swagger](src/main/resources/doc-images/swagger.PNG)
@@ -59,7 +59,7 @@ search files choose option 1 => use option (1) `<(Number 1 key then Enter)>`
 
 In the prompted ```Enter your search query below : ``` enter the file name
 
-Then from the response lit select the option number `<(Number key then Enter)>`
+Then from the response list select the option number `<(Number key then Enter)>`
 
 it will download the file to the server
 
