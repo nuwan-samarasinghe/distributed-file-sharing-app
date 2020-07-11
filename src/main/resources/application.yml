@@ -25,9 +25,9 @@ app:
   common:
     r-join-message-id: "rJoinMessage"
     file-name: "FileNames.txt"
-    enable-console: false
+    enable-console: true
 server:
-  port: 8081
+  port: 8080
   ssl:
     key-store-type: PKCS12
     key-store: "./src/main/resources/distributed-file-sharing-app.p12"
