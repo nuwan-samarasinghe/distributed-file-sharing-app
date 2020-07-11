@@ -1,6 +1,6 @@
 package com.assignment.distributedfilesharingapp.common;
 
-import com.assignment.distributedfilesharingapp.common.strategy.HeartBeatHandlingStrategy;
+import com.assignment.distributedfilesharingapp.common.messageProcesser.HeartBeatHandlingStrategy;
 import com.assignment.distributedfilesharingapp.model.RoutingTable;
 import lombok.extern.slf4j.Slf4j;
 

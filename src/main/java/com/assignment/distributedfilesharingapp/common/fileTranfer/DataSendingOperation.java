@@ -1,4 +1,4 @@
-package com.assignment.distributedfilesharingapp.common.ftp;
+package com.assignment.distributedfilesharingapp.common.fileTranfer;
 
 import com.assignment.distributedfilesharingapp.common.FileManager;
 import lombok.extern.slf4j.Slf4j;

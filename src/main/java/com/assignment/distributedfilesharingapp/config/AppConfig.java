@@ -2,7 +2,7 @@ package com.assignment.distributedfilesharingapp.config;
 
 import com.assignment.distributedfilesharingapp.common.FileManager;
 import com.assignment.distributedfilesharingapp.common.MessageBrokerThread;
-import com.assignment.distributedfilesharingapp.common.strategy.*;
+import com.assignment.distributedfilesharingapp.common.messageProcesser.*;
 import com.assignment.distributedfilesharingapp.model.Node;
 import com.assignment.distributedfilesharingapp.model.SearchResult;
 import com.assignment.distributedfilesharingapp.service.BootstrapServerService;

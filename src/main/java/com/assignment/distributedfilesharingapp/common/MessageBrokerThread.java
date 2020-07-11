@@ -1,6 +1,6 @@
 package com.assignment.distributedfilesharingapp.common;
 
-import com.assignment.distributedfilesharingapp.common.strategy.*;
+import com.assignment.distributedfilesharingapp.common.messageProcesser.*;
 import com.assignment.distributedfilesharingapp.model.ChannelMessage;
 import com.assignment.distributedfilesharingapp.model.Neighbour;
 import com.assignment.distributedfilesharingapp.model.RoutingTable;

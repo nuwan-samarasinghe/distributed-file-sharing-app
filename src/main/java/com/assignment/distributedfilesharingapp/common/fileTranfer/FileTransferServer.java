@@ -1,4 +1,4 @@
-package com.assignment.distributedfilesharingapp.common.ftp;
+package com.assignment.distributedfilesharingapp.common.fileTranfer;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
@@ -9,14 +9,14 @@ import java.net.Socket;
 
 
 @Slf4j
-public class FTPServer implements Runnable {
+public class FileTransferServer implements Runnable {
 
     private ServerSocket serverSocket;
     private Socket clientSocket;
     private String userName;
     private Environment environment;
 
-    public FTPServer(int port, String userName, Environment environment) throws Exception {
+    public FileTransferServer(int port, String userName, Environment environment) throws Exception {
         serverSocket = new ServerSocket(port);
         this.userName = userName;
         this.environment = environment;

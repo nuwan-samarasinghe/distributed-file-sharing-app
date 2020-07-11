@@ -1,4 +1,4 @@
-package com.assignment.distributedfilesharingapp.common.strategy;
+package com.assignment.distributedfilesharingapp.common.messageProcesser;
 
 import com.assignment.distributedfilesharingapp.common.MessageBrokerThread;
 import com.assignment.distributedfilesharingapp.model.MessageType;

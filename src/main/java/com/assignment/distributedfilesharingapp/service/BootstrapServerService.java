@@ -1,7 +1,7 @@
 package com.assignment.distributedfilesharingapp.service;
 
 import com.assignment.distributedfilesharingapp.common.IpPortConverter;
-import com.assignment.distributedfilesharingapp.exception.FileSharingException;
+import com.assignment.distributedfilesharingapp.exception.MessageExchangeException;
 import com.assignment.distributedfilesharingapp.model.MessageType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -90,7 +90,7 @@ public class BootstrapServerService {
 
         if (!sendOrReceive.contains(MessageType.REGOK.name())) {
             log.error(" {} not received", MessageType.REGOK.name());
-            throw new FileSharingException(MessageType.REGOK.name() + " not received");
+            throw new MessageExchangeException(MessageType.REGOK.name() + " not received");
         }
         String[] splitResponse = sendOrReceive.split(" ");
         List<InetSocketAddress> neighbourNodes = ipPortConverter.getStringToIPPortConverter().apply(splitResponse);
@@ -108,7 +108,7 @@ public class BootstrapServerService {
                 log.info("Successful - No other nodes in the network");
                 return Collections.emptyList();
             } else {
-                throw new FileSharingException("Invalid status code.");
+                throw new MessageExchangeException("Invalid status code.");
             }
             return null;
         } else {
