@@ -130,7 +130,7 @@ public class HeartBeatHandlingStrategy implements MessageHandlingStrategy {
     }
 
     synchronized void handleJoinOkResponse(ChannelMessage joinOkMessage) {
-        // log.info("receiving a pong request message:{} address:{} port:{}", message.getMessage(), message.getAddress(), message.getPort());
+        log.info("receiving a join ok request message:{} address:{} port:{}", joinOkMessage.getMessage(), joinOkMessage.getAddress(), joinOkMessage.getPort());
         String[] messageSplit = joinOkMessage.getMessage().split(" ");
         MessageType messageType = MessageType.valueOf(messageSplit[ 1 ]);
         if (messageType == MessageType.JOINOK) {

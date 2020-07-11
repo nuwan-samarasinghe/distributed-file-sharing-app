@@ -60,7 +60,7 @@ public class FileSearchMessageHandlingStrategy implements MessageHandlingStrateg
     @Override
     public void handleRequest(ChannelMessage message) {
         try {
-            // log.info("adding message to blocking queue with address {} port {} and the message {}", message.getAddress(), message.getPort(), message.getMessage());
+            log.info("adding message to blocking queue with address {} port {} and the message {}", message.getAddress(), message.getPort(), message.getMessage());
             channelOut.put(message);
         } catch (InterruptedException e) {
             log.error("an error occurred while adding the message.", e);

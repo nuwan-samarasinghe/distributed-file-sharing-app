@@ -34,7 +34,7 @@ public class MessageReceiver extends Thread {
                 String body = new String(response, 0, response.length);
                 MessageType messageType=MessageType.valueOf(body.split(" ")[1]);
                 ChannelMessage message = new ChannelMessage(messageType,address, port, body.trim());
-                // log.info("received the message:{}", message);
+                log.info("received the message:{}", message);
                 channelIn.put(message);
             } catch (IOException | InterruptedException e) {
                 log.error("an error occurred while sending the message", e);
