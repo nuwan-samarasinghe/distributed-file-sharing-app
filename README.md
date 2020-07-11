@@ -67,16 +67,21 @@ it will download the file to the server
 ### Questions and Answers
 
 #### Question 01
- How would you measure the performance of the system? 
+How would you measure the performance of the system? 
+##### Answer:
  
 #### Question 02
 You have mentioned that the search request will be a recursive call. If so, will it be a blocking call? 
 Will a particular node block, waiting for the response to arrive from the downstream nodes, unable to respond to other requests coming its way?
 What is the technology stack you plan to use?
+##### Answer:
 
 #### Question 03
 What is the technology stack you plan to use?
-
+##### Answer:
+We have desided to use spring framework(spring code and web).We have got that decision to simplify development
+and user spring inbuit crosscutting concerns.The other major reson is to use reactive file downloading with springs newest reactive
+technology stack in later of the development(if we decided to move to global production level). 
 
 
 
