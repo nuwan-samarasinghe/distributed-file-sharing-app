@@ -73,7 +73,7 @@ public class BootstrapServerService {
     private boolean processBootstrapServerUnregisterResponse(String response) {
         String[] strings = response.split(" ");
         if (!response.contains(MessageType.REGOK.name())) {
-            throw new FileSharingException(MessageType.UNROK + " not received");
+            throw new IllegalStateException("Registration not successful with response :"+strings);
         }
         if (Objects.equals(strings[2], "0")) {
             log.info("Successfully unregistered");

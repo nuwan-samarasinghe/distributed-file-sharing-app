@@ -76,10 +76,10 @@ public class HeartBeatHandlingStrategy implements MessageHandlingStrategy {
         JOIN - When other node need to connect with this node
         JOINOK - When this node want to connect other node and received success response
          */
-        if (message.getType() == MessageType.JOIN) {
-            handleIncomingMessage(message);
-        } else {
+        if (message.getType() == MessageType.JOINOK) {
             handleJoinOkResponse(message);
+        } else {
+            handleIncomingMessage(message);
         }
     }
 
