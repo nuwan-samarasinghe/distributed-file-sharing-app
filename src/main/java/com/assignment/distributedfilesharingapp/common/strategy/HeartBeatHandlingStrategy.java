@@ -98,6 +98,7 @@ public class HeartBeatHandlingStrategy implements MessageHandlingStrategy {
             } else {
                 // check are we able to add a neighbour to the node
                 if (routingTable.getNeighboursCount() < maxNeighbours) {
+                    routingTable.addNeighbour(messageSplitArray[ 2 ],Integer.parseInt(messageSplitArray[ 3 ]),maxNeighbours);
                     // sending a join ok request
                     String payload = String.format(joinOkFormat, this.routingTable.getNodeIp(), this.routingTable.getNodePort());
                     //format 3digit string to 4digit
@@ -135,6 +136,7 @@ public class HeartBeatHandlingStrategy implements MessageHandlingStrategy {
         MessageType messageType = MessageType.valueOf(messageSplit[ 1 ]);
         if (messageType == MessageType.JOINOK) {
             if (routingTable.getNeighboursCount() < maxNeighbours) {
+                this.timeoutManager.removeMessage(String.format(joinMessageIdFormat, messageSplit[ 2 ], Integer.parseInt(messageSplit[ 3 ].trim())));
                 this.routingTable.addNeighbour(messageSplit[ 2 ], Integer.parseInt(messageSplit[ 3 ].trim()), maxNeighbours);
             }
         } else {

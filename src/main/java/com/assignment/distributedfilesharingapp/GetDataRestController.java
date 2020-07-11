@@ -1,6 +1,7 @@
 package com.assignment.distributedfilesharingapp;
 
 import com.assignment.distributedfilesharingapp.config.AppConfig;
+import com.assignment.distributedfilesharingapp.model.Neighbour;
 import com.assignment.distributedfilesharingapp.model.Node;
 import com.assignment.distributedfilesharingapp.model.RoutingTable;
 import com.assignment.distributedfilesharingapp.model.SearchResult;
@@ -36,8 +37,8 @@ public class GetDataRestController {
     }
 
     @GetMapping(value = "/ip-table")
-    private RoutingTable printIpTable() {
-        return appConfig.getMessageBrokerThread().getRoutingTable();
+    private List<Neighbour> printIpTable() {
+        return appConfig.getMessageBrokerThread().getRoutingTable().getNeighbours();
     }
 
     @GetMapping(value = "/node")
