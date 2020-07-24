@@ -1,20 +1,19 @@
 package com.assignment.distributedfilesharingapp;
 
 import com.assignment.distributedfilesharingapp.config.AppConfig;
+import com.assignment.distributedfilesharingapp.model.FileDownloadModel;
 import com.assignment.distributedfilesharingapp.model.Neighbour;
 import com.assignment.distributedfilesharingapp.model.Node;
-import com.assignment.distributedfilesharingapp.model.RoutingTable;
 import com.assignment.distributedfilesharingapp.model.SearchResult;
 import com.assignment.distributedfilesharingapp.service.FileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -65,12 +64,14 @@ public class GetDataRestController {
     }
 
     @PostMapping(value = "/file/download")
-    private void downloadFile(@RequestBody SearchResult searchResult) {
+    private FileDownloadModel downloadFile(@RequestBody SearchResult searchResult) {
         log.info("downloading the following file {}", searchResult);
         try {
             fileService.startReceiveFile(searchResult);
+            return new FileDownloadModel("Download started! Check the application root folder of the server.", HttpStatus.OK);
         } catch (Exception e) {
             log.error("an error occurred while downloading a file", e);
+            return new FileDownloadModel("Download error!", HttpStatus.BAD_REQUEST);
         }
     }
 
