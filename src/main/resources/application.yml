@@ -27,7 +27,7 @@ app:
     file-name: "FileNames.txt"
     enable-console: false
 server:
-  port: 8080
+  port: 8081
   ssl:
     key-store-type: PKCS12
     key-store: "./src/main/resources/distributed-file-sharing-app.p12"

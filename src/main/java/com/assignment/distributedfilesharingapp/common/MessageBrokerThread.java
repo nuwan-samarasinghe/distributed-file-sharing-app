@@ -3,6 +3,7 @@ package com.assignment.distributedfilesharingapp.common;
 import com.assignment.distributedfilesharingapp.common.strategy.*;
 import com.assignment.distributedfilesharingapp.model.ChannelMessage;
 import com.assignment.distributedfilesharingapp.model.Neighbour;
+import com.assignment.distributedfilesharingapp.model.NodeQueryStatisticsModel;
 import com.assignment.distributedfilesharingapp.model.RoutingTable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,8 @@ public class MessageBrokerThread implements Runnable {
     private final MessageSender client;
     private final QueryMessageHandlingStrategy queryMessageHandlingStrategy;
     private final FileSearchMessageHandlingStrategy fileSearchMessageHandlingStrategy;
+    @Getter
+    private final NodeQueryStatisticsModel statisticsModel;
 
     public MessageBrokerThread(
             String address,
@@ -53,12 +56,13 @@ public class MessageBrokerThread implements Runnable {
             Environment environment,
             List<InetSocketAddress> neighbourNodes) throws SocketException {
 
+        statisticsModel = new NodeQueryStatisticsModel(address, port);
         this.address = address;
         this.port = port;
-        this.routingTable = new RoutingTable(address,port);
+        this.routingTable = new RoutingTable(address, port);
         this.channelIn = new LinkedBlockingQueue<>();
         this.channelOut = new LinkedBlockingQueue<>();
-        this.heartBeatHandlingStrategy=heartBeatHandlingStrategy;
+        this.heartBeatHandlingStrategy = heartBeatHandlingStrategy;
         this.leaveMessageHandlingStrategy = leaveMessageHandlingStrategy;
         this.fileManager = fileManager;
         timeoutManager = new TimeOutManager(environment);
@@ -96,7 +100,10 @@ public class MessageBrokerThread implements Runnable {
 
     private void sendRoutineJoin() {
         List<Neighbour> neighbours = routingTable.getNeighbours();
-        neighbours.forEach(neighbour -> this.heartBeatHandlingStrategy.sendJoin(neighbour.getAddress(), neighbour.getPort()));
+        neighbours.forEach(neighbour -> {
+            statisticsModel.increaseForwardedCount();
+            this.heartBeatHandlingStrategy.sendJoin(neighbour.getAddress(), neighbour.getPort());
+        });
     }
 
     @Override
@@ -116,7 +123,7 @@ public class MessageBrokerThread implements Runnable {
                     //extract necessary message handling strategy by giving correct message type
                     MessageHandlingStrategy messageHandlingStrategy = messageHandelingFactory.getMessageHandlingStrategy(message.getType(), this);
                     if (messageHandlingStrategy != null) {
-                        messageHandlingStrategy.handleResponse(message);
+                        messageHandlingStrategy.handleResponse(this.statisticsModel, message);
                     }
                 }
             } catch (InterruptedException e) {
@@ -126,6 +133,6 @@ public class MessageBrokerThread implements Runnable {
     }
 
     public void doSearch(String fileName) {
-        this.fileSearchMessageHandlingStrategy.doSearch(fileName);
+        this.fileSearchMessageHandlingStrategy.doSearch(this.statisticsModel, fileName);
     }
 }

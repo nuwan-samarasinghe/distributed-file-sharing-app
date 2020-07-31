@@ -2,10 +2,7 @@ package com.assignment.distributedfilesharingapp.common.strategy;
 
 import com.assignment.distributedfilesharingapp.common.StringEncoderDecoder;
 import com.assignment.distributedfilesharingapp.common.TimeOutManager;
-import com.assignment.distributedfilesharingapp.model.ChannelMessage;
-import com.assignment.distributedfilesharingapp.model.MessageType;
-import com.assignment.distributedfilesharingapp.model.RoutingTable;
-import com.assignment.distributedfilesharingapp.model.SearchResult;
+import com.assignment.distributedfilesharingapp.model.*;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +13,7 @@ import java.util.concurrent.BlockingQueue;
 
 @Slf4j
 @Component
-public class QueryMessageHandlingStrategy  implements MessageHandlingStrategy{
+public class QueryMessageHandlingStrategy implements MessageHandlingStrategy {
 
     @Value("${app.commands.query-format}")
     private String queryFormat;
@@ -50,7 +47,7 @@ public class QueryMessageHandlingStrategy  implements MessageHandlingStrategy{
     }
 
     @Override
-    public void handleResponse(ChannelMessage message) {
+    public void handleResponse(NodeQueryStatisticsModel statisticsModel, ChannelMessage message) {
         log.info("received message {} from: {} port:{}", message.getMessage(), message.getAddress(), message.getPort());
         String[] messageSplit = message.getMessage().split(" ");
         int filesCount = Integer.parseInt(messageSplit[2]);
@@ -71,10 +68,11 @@ public class QueryMessageHandlingStrategy  implements MessageHandlingStrategy{
 
     }
 
-    public void doSearch(String fileName) {
+    public void doSearch(NodeQueryStatisticsModel statisticsModel, String fileName) {
         String payload = String.format(queryFormat, this.routingTable.getNodeIp(), this.routingTable.getNodePort(), StringEncoderDecoder.encode(fileName), hopCount);
         String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
-        ChannelMessage initialMessage = new ChannelMessage(MessageType.SEROK,this.routingTable.getNodeIp(), this.routingTable.getNodePort(), rawMessage);
-        this.handleResponse(initialMessage);
+        ChannelMessage initialMessage = new ChannelMessage(MessageType.SEROK, this.routingTable.getNodeIp(), this.routingTable.getNodePort(), rawMessage);
+        statisticsModel.increaseAnsweredCount();
+        this.handleResponse(statisticsModel, initialMessage);
     }
 }

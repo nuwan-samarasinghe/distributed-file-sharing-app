@@ -2,10 +2,7 @@ package com.assignment.distributedfilesharingapp.common.strategy;
 
 import com.assignment.distributedfilesharingapp.common.JoinTimeout;
 import com.assignment.distributedfilesharingapp.common.TimeOutManager;
-import com.assignment.distributedfilesharingapp.model.ChannelMessage;
-import com.assignment.distributedfilesharingapp.model.MessageType;
-import com.assignment.distributedfilesharingapp.model.Neighbour;
-import com.assignment.distributedfilesharingapp.model.RoutingTable;
+import com.assignment.distributedfilesharingapp.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -70,60 +67,64 @@ public class HeartBeatHandlingStrategy implements MessageHandlingStrategy {
     }
 
     @Override
-    public void handleResponse(ChannelMessage message) {
+    public void handleResponse(NodeQueryStatisticsModel statisticsModel, ChannelMessage message) {
         /*
         this will call when inbound que has messages with JOIN or JOINOK
         JOIN - When other node need to connect with this node
         JOINOK - When this node want to connect other node and received success response
          */
         if (message.getType() == MessageType.JOIN) {
-            handleIncomingMessage(message);
+            statisticsModel.increaseReceivedCount();
+            handleIncomingMessage(statisticsModel, message);
         } else {
+            statisticsModel.increaseAnsweredCount();
             handleJoinOkResponse(message);
         }
     }
 
-    synchronized void handleIncomingMessage(ChannelMessage inboundMessage) {
+    synchronized void handleIncomingMessage(NodeQueryStatisticsModel statisticsModel, ChannelMessage inboundMessage) {
 
         String[] messageSplitArray = inboundMessage.getMessage().split(" ");
-        MessageType messageType = MessageType.valueOf(messageSplitArray[ 1 ]);
+        MessageType messageType = MessageType.valueOf(messageSplitArray[1]);
 
         // if new node need to connect/join with our node
         if (MessageType.JOIN == messageType) {
             // if the given message is sent by a neighbour pass it to other neighbours.
             if (this.routingTable.isANeighbour(inboundMessage.getAddress(), inboundMessage.getPort())) {
-                if (Integer.parseInt(messageSplitArray[ 4 ]) > 0) {
-                    forwardBootstrapJoin(inboundMessage.getAddress(), inboundMessage.getPort(), Integer.parseInt(messageSplitArray[ 4 ]) - 1);
+                if (Integer.parseInt(messageSplitArray[4]) > 0) {
+                    statisticsModel.increaseForwardedCount();
+                    forwardBootstrapJoin(inboundMessage.getAddress(), inboundMessage.getPort(), Integer.parseInt(messageSplitArray[4]) - 1);
                 }
             } else {
                 // check are we able to add a neighbour to the node
                 if (routingTable.getNeighboursCount() < maxNeighbours) {
-                    routingTable.addNeighbour(messageSplitArray[ 2 ],Integer.parseInt(messageSplitArray[ 3 ]),maxNeighbours);
+                    routingTable.addNeighbour(messageSplitArray[2], Integer.parseInt(messageSplitArray[3]), maxNeighbours);
                     // sending a join ok request
                     String payload = String.format(joinOkFormat, this.routingTable.getNodeIp(), this.routingTable.getNodePort());
                     //format 3digit string to 4digit
                     String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
-                    ChannelMessage outGoingMsg = new ChannelMessage(MessageType.JOINOK, messageSplitArray[ 2 ], Integer.parseInt(messageSplitArray[ 3 ]), rawMessage);
+                    ChannelMessage outGoingMsg = new ChannelMessage(MessageType.JOINOK, messageSplitArray[2], Integer.parseInt(messageSplitArray[3]), rawMessage);
                     this.handleRequest(outGoingMsg);
                     log.info("sending a join ok request {}", payload);
                 } else {
                     //otherwise send it to the neighbours
-                    if (Integer.parseInt(messageSplitArray[ 4 ]) > 0) {
-                        forwardBootstrapJoin(inboundMessage.getAddress(), inboundMessage.getPort(), Integer.parseInt(messageSplitArray[ 4 ]) - 1);
+                    if (Integer.parseInt(messageSplitArray[4]) > 0) {
+                        statisticsModel.increaseForwardedCount();
+                        forwardBootstrapJoin(inboundMessage.getAddress(), inboundMessage.getPort(), Integer.parseInt(messageSplitArray[4]) - 1);
                     }
                 }
             }
         } else if (messageType == MessageType.LEAVE) {
             // if node leaves
-            this.routingTable.removeNeighbour(messageSplitArray[ 2 ], Integer.parseInt(messageSplitArray[ 3 ]));
+            this.routingTable.removeNeighbour(messageSplitArray[2], Integer.parseInt(messageSplitArray[3]));
             if (routingTable.getNeighboursCount() <= minNeighbours) {
-                sendBootstrapJoin(messageSplitArray[ 2 ], Integer.parseInt(messageSplitArray[ 3 ]));
+                sendBootstrapJoin(messageSplitArray[2], Integer.parseInt(messageSplitArray[3]));
             }
         } else {
-            if (this.routingTable.addNeighbour(messageSplitArray[ 2 ], Integer.parseInt(messageSplitArray[ 3 ].trim()), maxNeighbours) != 0) {
+            if (this.routingTable.addNeighbour(messageSplitArray[2], Integer.parseInt(messageSplitArray[3].trim()), maxNeighbours) != 0) {
                 String payload = String.format(joinOkFormat, this.routingTable.getNodeIp(), this.routingTable.getNodePort());
                 String rawMessage = String.format(messageFormat, payload.length() + 5, payload);
-                ChannelMessage outGoingMsg = new ChannelMessage(MessageType.JOIN, messageSplitArray[ 2 ], Integer.parseInt(messageSplitArray[ 3 ].trim()), rawMessage);
+                ChannelMessage outGoingMsg = new ChannelMessage(MessageType.JOIN, messageSplitArray[2], Integer.parseInt(messageSplitArray[3].trim()), rawMessage);
                 this.handleRequest(outGoingMsg);
             }
         }
@@ -133,15 +134,15 @@ public class HeartBeatHandlingStrategy implements MessageHandlingStrategy {
     synchronized void handleJoinOkResponse(ChannelMessage joinOkMessage) {
         log.info("receiving a join ok request message:{} address:{} port:{}", joinOkMessage.getMessage(), joinOkMessage.getAddress(), joinOkMessage.getPort());
         String[] messageSplit = joinOkMessage.getMessage().split(" ");
-        MessageType messageType = MessageType.valueOf(messageSplit[ 1 ]);
+        MessageType messageType = MessageType.valueOf(messageSplit[1]);
         if (messageType == MessageType.JOINOK) {
             if (routingTable.getNeighboursCount() < maxNeighbours) {
-                this.timeoutManager.removeMessage(String.format(joinMessageIdFormat, messageSplit[ 2 ], Integer.parseInt(messageSplit[ 3 ].trim())));
-                this.routingTable.addNeighbour(messageSplit[ 2 ], Integer.parseInt(messageSplit[ 3 ].trim()), maxNeighbours);
+                this.timeoutManager.removeMessage(String.format(joinMessageIdFormat, messageSplit[2], Integer.parseInt(messageSplit[3].trim())));
+                this.routingTable.addNeighbour(messageSplit[2], Integer.parseInt(messageSplit[3].trim()), maxNeighbours);
             }
         } else {
-            this.timeoutManager.removeMessage(String.format(joinMessageIdFormat, messageSplit[ 2 ], Integer.parseInt(messageSplit[ 3 ].trim())));
-            this.routingTable.addNeighbour(messageSplit[ 2 ], Integer.parseInt(messageSplit[ 3 ].trim()), maxNeighbours);
+            this.timeoutManager.removeMessage(String.format(joinMessageIdFormat, messageSplit[2], Integer.parseInt(messageSplit[3].trim())));
+            this.routingTable.addNeighbour(messageSplit[2], Integer.parseInt(messageSplit[3].trim()), maxNeighbours);
         }
     }
 

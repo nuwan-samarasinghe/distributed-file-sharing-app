@@ -3,6 +3,7 @@ package com.assignment.distributedfilesharingapp.common.strategy;
 import com.assignment.distributedfilesharingapp.common.TimeOutManager;
 import com.assignment.distributedfilesharingapp.model.ChannelMessage;
 import com.assignment.distributedfilesharingapp.model.MessageType;
+import com.assignment.distributedfilesharingapp.model.NodeQueryStatisticsModel;
 import com.assignment.distributedfilesharingapp.model.RoutingTable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,7 +41,7 @@ public class LeaveMessageHandlingStrategy implements MessageHandlingStrategy {
     }
 
     @Override
-    public void handleResponse(ChannelMessage message) {
+    public void handleResponse(NodeQueryStatisticsModel statisticsModel, ChannelMessage message) {
 
     }
 

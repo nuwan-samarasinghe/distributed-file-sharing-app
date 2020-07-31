@@ -1,10 +1,7 @@
 package com.assignment.distributedfilesharingapp;
 
 import com.assignment.distributedfilesharingapp.config.AppConfig;
-import com.assignment.distributedfilesharingapp.model.FileDownloadModel;
-import com.assignment.distributedfilesharingapp.model.Neighbour;
-import com.assignment.distributedfilesharingapp.model.Node;
-import com.assignment.distributedfilesharingapp.model.SearchResult;
+import com.assignment.distributedfilesharingapp.model.*;
 import com.assignment.distributedfilesharingapp.service.FileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
@@ -73,6 +70,11 @@ public class GetDataRestController {
             log.error("an error occurred while downloading a file", e);
             return new FileDownloadModel("Download error!", HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @GetMapping(value = "/node/statistics")
+    private NodeQueryStatisticsModel getStatisticsModel() {
+        return appConfig.getMessageBrokerThread().getStatisticsModel();
     }
 
 }
