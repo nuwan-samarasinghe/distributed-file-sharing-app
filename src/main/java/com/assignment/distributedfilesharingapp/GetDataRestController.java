@@ -56,8 +56,13 @@ public class GetDataRestController {
     }
 
     @GetMapping(value = "/file/{fileName}")
-    private ResponseEntity<List<SearchResult>> getSearchedFileList(@PathVariable("fileName") String fileName) {
-        return ResponseEntity.ok().body(new ArrayList<>(this.appConfig.doSearch(fileName).values()));
+    private ResponseEntity<ResponseResultDocument> getSearchedFileList(@PathVariable("fileName") String fileName) {
+        ResponseResultDocument responseResultDocument = new ResponseResultDocument();
+        responseResultDocument.setStatisticsModel(appConfig.getMessageBrokerThread().getStatisticsModel());
+        responseResultDocument.setSearchResultList(new ArrayList<>(this.appConfig.doSearch(fileName).values()));
+        responseResultDocument.setNeighbourCount(appConfig.getMessageBrokerThread().getRoutingTable().getNeighbours().size());
+        return ResponseEntity.ok().body(responseResultDocument);
+
     }
 
     @PostMapping(value = "/file/download")
